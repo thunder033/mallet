@@ -55,7 +55,7 @@ export function ngAnnotate(provider: Function | InjectableMethodCtor): Array<str
     return [...annotations, method];
 }
 
-type DepTree = {
+export type DepTree = {
     [key: string]: string | DepTree;
 };
 

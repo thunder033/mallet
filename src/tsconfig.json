@@ -9,8 +9,7 @@
     "baseUrl": ".",
     "paths": {
       "lib/*": ["lib/*"],
-      "@tree": ["dt"],
-      "pulsar": ["../node_modules/pulsar-lib/dist/src"]
+      "@tree": ["dt"]
     }
   }
 }

@@ -2,8 +2,8 @@
  * Created by gjrwcs on 9/15/2016.
  */
 import {inject, InjectableMethod} from 'lib/injector-plus';
-import {DT} from '@tree';
-import {Logger} from 'core/log';
+import {Logger} from './logger.factory';
+import {MDT} from './mallet.depedency-tree';
 
 export type Image = HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | ImageBitmap;
 
@@ -113,7 +113,7 @@ export type RenderTargetFactory = <T extends RenderTarget>(ctor: {new(...args): 
 
 // tslint:disable-next-line:class-name
 export class renderTargetFactory implements InjectableMethod {
-    public exec(@inject(DT.core.log) logger: Logger) {
+    public exec(@inject(MDT.Logger) logger: Logger) {
         return <T extends RenderTarget>(ctor: {new(...args): T}, options: IRenderTargetOptions): T => {
             return new ctor(options, logger) as T;
         };

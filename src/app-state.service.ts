@@ -1,8 +1,7 @@
 import {inject, ngAnnotate} from 'lib/injector-plus';
-import {MDT} from 'lib/mallet/mallet.depedency-tree';
+import {MDT} from './mallet.depedency-tree';
 import {ILocationService} from 'angular';
-import {DT} from '@tree';
-import {Logger} from 'core/log';
+import {Logger} from './logger.factory';
 import {state, StateMachine} from 'lib/state-machine';
 
 export class AppState extends StateMachine {
@@ -13,7 +12,7 @@ export class AppState extends StateMachine {
 
     constructor(
         @inject(MDT.ng.$location) private $location: ILocationService,
-        @inject(DT.core.log) private logger: Logger) {
+        @inject(MDT.Logger) private logger: Logger) {
         super();
         this.clearState();
     }
@@ -43,5 +42,3 @@ export class AppState extends StateMachine {
         this.removeStateListeners();
     }
 }
-
-module.exports = ngAnnotate(AppState);

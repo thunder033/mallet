@@ -32,20 +32,26 @@ export class Color {
 
     /**
      * Converts a series of hsl values or a vector to an rgba color set
-     * derived from: http://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
+     * @param color {Vector3}: Vector with x, y, z components mapped to hue, saturation, lights values
+     */
+    public static hslToRgb(color: Vector3): Vector3;
+    /**
+     * Converts a series of hsl values or a vector to an rgba color set
      * @param hue {Vector3|number}: 0 - 255
      * @param saturation {number}: 0 - 100
      * @param lightness {number}: 0 - 100
      */
-    public static hslToRgb(hue: number | Vector3, saturation: number, lightness: number): Vector3 {
+    public static hslToRgb(hue: number, saturation: number, lightness: number): Vector3
+    public static hslToRgb(hue: number | Vector3, saturation?: number, lightness?: number): Vector3 {
+        // derived from: http://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
         let r;
         let g;
         let b;
 
         if (hue instanceof Vector3) {
-            hue = hue.x;
             saturation = hue.y;
             lightness = hue.z;
+            hue = hue.x;
         }
 
         hue /= 255;

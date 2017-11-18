@@ -1,11 +1,10 @@
 
 import {inject} from 'lib/injector-plus';
-import {MDT} from 'lib/mallet/mallet.depedency-tree';
-import {DT} from '@tree';
-import {Logger} from 'core/log';
+import {MDT} from './mallet.depedency-tree';
+import {Logger} from './logger.factory';
 import {PriorityQueue} from 'pulsar-lib';
 import bind from 'bind-decorator';
-import {AppState} from 'lib/mallet/app-state.service';
+import {AppState} from './app-state.service';
 
 export class Scheduler {
     private updateOperations: PriorityQueue;
@@ -59,7 +58,7 @@ export class Scheduler {
     constructor(
         @inject(MDT.const.MaxFrameRate) private maxFrameRate: number,
         @inject(MDT.AppState) private appState: AppState,
-        @inject(DT.core.log) private logger: Logger) {
+        @inject(MDT.Logger) private logger: Logger) {
 
         this.updateOperations = new PriorityQueue();
         this.drawCommands = new PriorityQueue();
@@ -73,7 +72,7 @@ export class Scheduler {
     @bind
     public suspend(e) {
         if (!(e && e.type === 'blur' && this.suspendOnBlur === false)) {
-            this.appState.setState(this.appState.Suspended);
+            this.appState.setState(AppState.Suspended);
             cancelAnimationFrame(this.animationFrame);
             // $rootScope.$evalAsync();
         }
@@ -81,7 +80,7 @@ export class Scheduler {
 
     @bind
     public resume() {
-        if (this.appState.is(this.appState.Suspended)) {
+        if (this.appState.is(AppState.Suspended)) {
             this.startMainLoop();
         }
     }
@@ -93,7 +92,7 @@ export class Scheduler {
         this.startTime = (new Date()).getTime();
         this.lastFrameTime = (new Date()).getTime();
         this.animationFrame = requestAnimationFrame(this.mainLoop);
-        this.appState.setState(this.appState.Running);
+        this.appState.setState(AppState.Running);
     }
 
     /**

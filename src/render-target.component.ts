@@ -1,8 +1,8 @@
 
 import {inject} from 'lib/injector-plus';
-import {MDT} from 'lib/mallet/mallet.depedency-tree';
-import {RenderTarget2D, RenderTargetFactory} from 'lib/mallet/render-target.factory';
-import {Scheduler} from 'lib/mallet/scheduler.service';
+import {MDT} from './mallet.depedency-tree';
+import {RenderTarget2D, RenderTargetFactory} from './render-target.factory';
+import {Scheduler} from './scheduler.service';
 import {IAugmentedJQuery, IComponentOptions, IController} from 'angular';
 import bind from 'bind-decorator';
 
