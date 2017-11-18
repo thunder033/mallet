@@ -1,6 +1,6 @@
 {
   "name": "mallet",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Real-time Angular rendering engine written in TypeScript, based on WebGL & Canvas",
   "main": "index.js",
   "scripts": {
@@ -32,9 +32,7 @@
     "url": "https://github.com/thunder033/mallet/issues"
   },
   "homepage": "https://github.com/thunder033/mallet#readme",
-  "dependencies": {
-
-  },
+  "dependencies": {},
   "devDependencies": {
     "typescript": "2.5.3",
     "@types/angular": "^1.6.32",
