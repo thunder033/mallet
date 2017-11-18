@@ -9,6 +9,7 @@ const annotationKey = Symbol('dependencies');
  * @returns {ParameterDecorator}
  */
 function inject(identifier) {
+    // tslint:disable-next-line:callable-types
     return function annotation(target, key, index) {
         if (key && key !== injectableMethodName) {
             throw new TypeError('Dependencies can only be injected on constructor or injectable method executor');

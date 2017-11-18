@@ -1,4 +1,4 @@
-import {state, StateMachine} from 'lib/state-machine';
+import {state, StateMachine} from './lib/state-machine';
 
 // eventual source mapping stuff
 // const convert = require('convert-source-map');
@@ -124,9 +124,4 @@ export class Logger {
     }
 }
 
-// we need to expose Level && Logger
-function loggerFactory() { return new Logger(); }
-loggerFactory['Level'] = Level;
-loggerFactory['Logger'] = Logger;
-
-module.exports = loggerFactory;
+export function loggerFactory() { return new Logger(); }

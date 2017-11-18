@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mallet_depedency_tree_1 = require("./mallet.depedency-tree");
-const injector_plus_1 = require("lib/injector-plus");
+const injector_plus_1 = require("./lib/injector-plus");
 const render_target_factory_1 = require("./render-target.factory");
 const app_state_service_1 = require("./app-state.service");
 const scheduler_service_1 = require("./scheduler.service");
+// tslint:disable:no-var-requires
 const mallet = require('angular').module('mallet', [
     require('./mallet.constants'),
 ]);

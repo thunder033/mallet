@@ -20,6 +20,7 @@
     "no-angle-bracket-type-assertion": true,
     "no-default-export": true,
     "no-empty-interface": true,
+    "no-implicit-dependencies": [true, "dev"],
     "no-string-throw": true,
     "prefer-const": true,
     "no-bitwise": false,

@@ -17,7 +17,7 @@ export declare function inject(identifier: string): ParameterDecorator;
  * @returns {Array<string | Function>}
  */
 export declare function ngAnnotate(provider: Function | InjectableMethodCtor): Array<string | Function>;
-export declare type DepTree = {
+export interface DepTree {
     [key: string]: string | DepTree;
-};
+}
 export declare function buildTree(tree: DepTree, module: string): void;

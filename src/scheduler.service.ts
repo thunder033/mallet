@@ -1,5 +1,5 @@
 
-import {inject} from 'lib/injector-plus';
+import {inject} from './lib/injector-plus';
 import {MDT} from './mallet.depedency-tree';
 import {Logger} from './logger.factory';
 import {PriorityQueue} from 'pulsar-lib';

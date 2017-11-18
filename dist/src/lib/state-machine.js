@@ -12,7 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Created by Greg on 3/24/2017.
  */
-const decorators_1 = require("lib/decorators");
+const decorators_1 = require("./decorators");
+// tslint:disable:no-shadowed-variable
 class StateListener {
     constructor(state, callback) {
         this.state = state;

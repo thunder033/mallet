@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const state_machine_1 = require("lib/state-machine");
+const state_machine_1 = require("./lib/state-machine");
 // eventual source mapping stuff
 // const convert = require('convert-source-map');
 // const currentScript = document.currentScript.src;
@@ -118,9 +118,6 @@ class Logger {
     }
 }
 exports.Logger = Logger;
-// we need to expose Level && Logger
 function loggerFactory() { return new Logger(); }
-loggerFactory['Level'] = Level;
-loggerFactory['Logger'] = Logger;
-module.exports = loggerFactory;
+exports.loggerFactory = loggerFactory;
 //# sourceMappingURL=logger.factory.js.map

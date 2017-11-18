@@ -1,7 +1,7 @@
 /**
  * Created by gjrwcs on 9/15/2016.
  */
-import { InjectableMethod } from 'lib/injector-plus';
+import { InjectableMethod } from './lib/injector-plus';
 import { Logger } from './logger.factory';
 export declare type Image = HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | ImageBitmap;
 export interface IRenderTarget {

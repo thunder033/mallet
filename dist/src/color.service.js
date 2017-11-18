@@ -47,6 +47,7 @@ class Color {
             b = lightness;
         }
         else {
+            // tslint:disable-next-line:no-shadowed-variable
             const hueToRGB = (p, q, t) => {
                 if (t < 0) {
                     t += 1;

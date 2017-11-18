@@ -1,7 +1,7 @@
 /// <reference types="angular" />
 import { ILocationService } from 'angular';
 import { Logger } from './logger.factory';
-import { StateMachine } from 'lib/state-machine';
+import { StateMachine } from './lib/state-machine';
 export declare class AppState extends StateMachine {
     private $location;
     private logger;

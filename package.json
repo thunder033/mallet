@@ -4,14 +4,14 @@
   "description": "Real-time Angular rendering engine written in TypeScript, based on WebGL & Canvas",
   "main": "index.js",
   "scripts": {
-    "build": "npm run srcCompile",
-    "srcCompile": "tsc -p .",
-    "pretest": "tslint \"src/**/*.ts\" \"test/**/*.ts\" && tsc -p ./ && tsc -p ./test",
+    "build": "tslint \"src/**/*.ts\" \"test/**/*.ts\" && tsc -p ./ && tsc -p ./test",
+    "pretest": "npm run build",
     "test": "./node_modules/.bin/mocha --reporter spec test/**/*.js",
     "preversion": "npm test",
     "version": "npm run build",
     "postversion": "git push && git push --tags",
     "watch": "grunt watch",
+    "push": "npm run build && npm version",
     "buildRun": "tsc -p ./ && node ./src/app.js"
   },
   "repository": {
@@ -30,6 +30,9 @@
     "url": "https://github.com/thunder033/mallet/issues"
   },
   "homepage": "https://github.com/thunder033/mallet#readme",
+  "dependencies": {
+
+  },
   "devDependencies": {
     "typescript": "2.5.3",
     "@types/angular": "^1.6.32",

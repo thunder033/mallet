@@ -1,8 +1,9 @@
 /**
  * Created by Greg on 3/24/2017.
  */
-import {enumerable} from 'lib/decorators';
+import {enumerable} from './decorators';
 
+// tslint:disable:no-shadowed-variable
 class StateListener {
     private state: number;
     private callback: Function;

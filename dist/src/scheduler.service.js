@@ -12,7 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const injector_plus_1 = require("lib/injector-plus");
+const injector_plus_1 = require("./lib/injector-plus");
 const mallet_depedency_tree_1 = require("./mallet.depedency-tree");
 const logger_factory_1 = require("./logger.factory");
 const pulsar_lib_1 = require("pulsar-lib");

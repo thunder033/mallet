@@ -41,7 +41,7 @@ export class Color {
      * @param saturation {number}: 0 - 100
      * @param lightness {number}: 0 - 100
      */
-    public static hslToRgb(hue: number, saturation: number, lightness: number): Vector3
+    public static hslToRgb(hue: number, saturation: number, lightness: number): Vector3;
     public static hslToRgb(hue: number | Vector3, saturation?: number, lightness?: number): Vector3 {
         // derived from: http://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
         let r;
@@ -63,6 +63,7 @@ export class Color {
             g = lightness;
             b = lightness;
         } else {
+            // tslint:disable-next-line:no-shadowed-variable
             const hueToRGB = (p, q, t) => {
                 if (t < 0) { t += 1; }
                 if (t > 1) { t -= 1; }

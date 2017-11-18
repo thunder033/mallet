@@ -1,7 +1,7 @@
 /**
  * Created by gjrwcs on 9/15/2016.
  */
-import {inject, InjectableMethod} from 'lib/injector-plus';
+import {inject, InjectableMethod} from './lib/injector-plus';
 import {Logger} from './logger.factory';
 import {MDT} from './mallet.depedency-tree';
 

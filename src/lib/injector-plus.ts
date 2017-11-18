@@ -17,6 +17,7 @@ const annotationKey = Symbol('dependencies');
  * @returns {ParameterDecorator}
  */
 export function inject(identifier: string): ParameterDecorator {
+    // tslint:disable-next-line:callable-types
     return function annotation(target: {(...args): any} | Function, key: string, index: number) {
         if (key && key !== injectableMethodName) {
             throw new TypeError('Dependencies can only be injected on constructor or injectable method executor');
@@ -46,7 +47,7 @@ export function ngAnnotate(provider: Function | InjectableMethodCtor): Array<str
         methodName += `.${injectableMethodName}`;
     }
 
-    if(annotations.length !== method.length) {
+    if (annotations.length !== method.length) {
         throw new Error(
             `Annotations are not defined for all dependencies of ${methodName}: 
             expected ${method.length} annotations and found ${annotations.length}`);
@@ -55,9 +56,9 @@ export function ngAnnotate(provider: Function | InjectableMethodCtor): Array<str
     return [...annotations, method];
 }
 
-export type DepTree = {
+export interface DepTree {
     [key: string]: string | DepTree;
-};
+}
 
 export function buildTree(tree: DepTree, module: string) {
     try {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const injector_plus_1 = require("lib/injector-plus");
+const injector_plus_1 = require("./lib/injector-plus");
 const MDT = {
     component: {
         renderTarget: 'mallet-render-target',

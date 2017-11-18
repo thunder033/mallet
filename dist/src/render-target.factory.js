@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Created by gjrwcs on 9/15/2016.
  */
-const injector_plus_1 = require("lib/injector-plus");
+const injector_plus_1 = require("./lib/injector-plus");
 const logger_factory_1 = require("./logger.factory");
 const mallet_depedency_tree_1 = require("./mallet.depedency-tree");
 var CanvasContext;

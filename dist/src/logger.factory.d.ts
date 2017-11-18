@@ -1,4 +1,4 @@
-import { StateMachine } from 'lib/state-machine';
+import { StateMachine } from './lib/state-machine';
 export declare class Level extends StateMachine {
     static None: any;
     static Error: any;
@@ -40,3 +40,4 @@ export declare class Logger {
     verbose(...args: any[]): any;
     private logOut(args, msgLevel, func);
 }
+export declare function loggerFactory(): Logger;

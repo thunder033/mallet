@@ -1,4 +1,4 @@
-import {buildTree} from 'lib/injector-plus';
+import {buildTree} from './lib/injector-plus';
 
 const MDT = {
     component: {
