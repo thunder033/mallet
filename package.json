@@ -11,7 +11,9 @@
     "version": "npm run build",
     "postversion": "git push && git push --tags",
     "watch": "grunt watch",
-    "push": "npm run build && npm version",
+    "push:patch": "npm run build && npm version patch",
+    "push:minor": "npm run build && npm version minor",
+    "push:major": "npm run build && npm version major",
     "buildRun": "tsc -p ./ && node ./src/app.js"
   },
   "repository": {
