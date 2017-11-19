@@ -1,10 +1,14 @@
 
-import {inject} from './lib/injector-plus';
+import {inject, ngAnnotate} from './lib/injector-plus';
 import {MDT} from './mallet.depedency-tree';
-import {IRenderTarget, IRenderTargetCtor, RenderingContext, RenderTargetFactory} from './render-target.factory';
+import {
+    IRenderTarget, IRenderTargetCtor, RenderingContext, RenderTarget2D,
+    RenderTargetFactory,
+} from './render-target.factory';
 import {Scheduler} from './scheduler.service';
-import {IAugmentedJQuery, IComponentOptions, IController} from 'angular';
+import {element, IAugmentedJQuery, IComponentOptions, IController} from 'angular';
 import bind from 'bind-decorator';
+import {Logger} from './lib/logger';
 
 export class RenderTargetCtrl implements IController {
 
@@ -14,30 +18,37 @@ export class RenderTargetCtrl implements IController {
 
     private type: IRenderTargetCtor;
 
-    private readonly QUARTER_RENDER_NAME = 'quarterRender';
     private readonly NO_SUPPORT_MESSAGE = 'Your browser does not support canvas. Please consider upgrading.';
 
-    constructor(
-        @inject(MDT.ng.$element) private $element: IAugmentedJQuery,
-        @inject(MDT.AppState) private mState,
-        @inject(MDT.Scheduler) private scheduler: Scheduler,
-        @inject(MDT.RenderTarget) private renderTargetFactory: RenderTargetFactory) {
+    public static getController($element: IAugmentedJQuery): RenderTargetCtrl {
+        // https://stackoverflow.com/questions/21995108/angular-get-controller-from-element
+        const targetTag = 'mallet-render-target';
+        const renderTarget = $element[0].getElementsByTagName(targetTag);
+        return element(renderTarget).controller(MDT.component.renderTarget);
+    }
 
+    constructor(
+        @inject(MDT.Logger) protected logger: Logger,
+        @inject(MDT.ng.$element) protected $element: IAugmentedJQuery,
+        @inject(MDT.AppState) protected mState,
+        @inject(MDT.Scheduler) protected scheduler: Scheduler,
+        @inject(MDT.RenderTarget) protected renderTargetFactory: RenderTargetFactory) {
+    }
+
+    public $onInit() {
         // Create the render target
         const width = this.$element[0].clientWidth;
         const height = this.$element[0].clientHeight;
+        this.logger.debug(`Create render target with type ${this.type.name}`);
         this.renderTarget = this.renderTargetFactory(this.type, {width, height});
         this.ctx = this.renderTarget.getContext();
 
         // Setup and attach canvas
         const canvas = this.renderTarget.getCanvas();
         canvas.innerHTML = this.NO_SUPPORT_MESSAGE;
-        $element.append(canvas);
+        this.$element.append(canvas);
 
-        // figure out how to re-impl
-        // this.easel.createNewCanvas(this.QUARTER_RENDER_NAME, this.canvas.width / 2, this.canvas.height / 2);
-        // this.canvas.style.background = '#000';
-
+        this.scheduler.schedule(this.update, 0);
         window.addEventListener('resize', this.onResize);
     }
 
@@ -45,17 +56,12 @@ export class RenderTargetCtrl implements IController {
         window.removeEventListener('resize', this.onResize);
     }
 
-    public getContext(): WebGLRenderingContext | CanvasRenderingContext2D {
+    public getContext(): RenderingContext {
         return this.ctx;
     }
 
     @bind
-    private onResize() {
-        this.renderTarget.resize();
-    }
-
-    @bind
-    private update() {
+    protected update(): void {
         const lowResScale = 0.75;
         // Reduce canvas resolution is performance is bad
         if (this.scheduler.FPS < 30 && this.scale === 1) {
@@ -67,27 +73,34 @@ export class RenderTargetCtrl implements IController {
         }
 
         this.scheduler.draw(() => this.renderTarget.clear(), -1);
-        // this.scheduler.draw(() => this.easel.clearCanvas(this.easel.getContext(this.QUARTER_RENDER_NAME)), -1);
+    }
 
-        // if (this.mState.is(this.mState.Debug)) {
-        //     this.scheduler.draw(() => {
-        //         this.ctx.fillStyle = '#fff';
-        //         this.ctx.fillText(`FPS: ${~~this.scheduler.FPS}`, 25, 25);
-        //     }, 1);
-        // }
+    @bind
+    private onResize() {
+        this.renderTarget.resize();
     }
 }
 
 class RenderTarget2DCtrl extends RenderTargetCtrl {
+    protected renderTarget: RenderTarget2D;
+    protected ctx: CanvasRenderingContext2D;
 
+    protected update(): void {
+        super.update();
+
+        if (this.mState.is(this.mState.Debug)) {
+            this.scheduler.draw(() => {
+                this.ctx.fillStyle = '#fff';
+                this.ctx.fillText(`FPS: ${~~this.scheduler.FPS}`, 25, 25);
+            }, 1);
+        }
+    }
 }
 
-const options: IComponentOptions = {
-    controller: RenderTargetCtrl,
+export const options: IComponentOptions = {
+    controller: ngAnnotate(RenderTargetCtrl) as any,
     template: '<div class="render-target"></div>',
     bindings: {
         type: '<',
     },
 };
-
-module.exports = options;
