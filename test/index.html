@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mall Test App</title>
+    <script src="build/bundle.js"></script>
+    <style>
+        html, body, main, test-harness, mallet-render-target, canvas {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        mallet-render-target, test-harness {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <main ng-app="mallet-test">
+        <test-harness></test-harness>
+    </main>
+</body>
+</html>
