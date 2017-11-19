@@ -31,8 +31,8 @@ node_modules
 # Created by .ignore support plugin (hsz.mobi)
 .idea
 
-src/*.js
-src/*.js.map
+src/**/*.js
+src/**/*.js.map
 
 test/**/*.js
 test/**/*.js.map

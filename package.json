@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "description": "Real-time Angular rendering engine written in TypeScript, based on WebGL & Canvas",
   "main": "index.js",
+  "browser": "./test/app/test.module.js",
   "scripts": {
     "build": "tslint \"src/**/*.ts\" \"test/**/*.ts\" && tsc -p ./ && tsc -p ./test",
     "pretest": "npm run build",
@@ -10,11 +11,12 @@
     "preversion": "npm test",
     "version": "npm run build",
     "postversion": "git push && git push --tags",
-    "watch": "grunt watch",
     "push:patch": "npm run build && npm version patch",
     "push:minor": "npm run build && npm version minor",
     "push:major": "npm run build && npm version major",
-    "buildRun": "tsc -p ./ && node ./src/app.js"
+    "buildRun": "tsc -p ./ && node ./src/app.js",
+    "depUpdate": "npm i && npm link pulsar-lib",
+    "bundleTest": "tsc -p ./test && browserify --debug test/app/test.module.js -o test/build/bundle.js"
   },
   "repository": {
     "type": "git",
