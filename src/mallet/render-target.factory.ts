@@ -2,7 +2,7 @@
  * Created by gjrwcs on 9/15/2016.
  */
 import {inject, InjectableMethod} from './lib/injector-plus';
-import {Logger} from './logger.factory';
+import {Logger} from './logger.service';
 import {MDT} from './mallet.depedency-tree';
 
 export type Image = HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | ImageBitmap;

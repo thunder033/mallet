@@ -1,11 +1,16 @@
 
 import {inject} from './lib/injector-plus';
 import {MDT} from './mallet.depedency-tree';
-import {Logger} from './logger.factory';
+import {Logger} from './logger.service';
 import {PriorityQueue} from 'pulsar-lib';
 import bind from 'bind-decorator';
 import {AppState} from './app-state.service';
 
+export type ICommand = (deltaTime: number, totalTime: number) => void;
+
+/**
+ * Executes and monitors the engine loop
+ */
 export class Scheduler {
     private updateOperations: PriorityQueue;
     private drawCommands: PriorityQueue;
@@ -39,7 +44,7 @@ export class Scheduler {
     /** @description timestamp of the last frame */
     private lastFrameTime: number = 0;
 
-    private static scheduleCommand(command, priority, queue) {
+    private static scheduleCommand(command: Function, priority: number, queue: PriorityQueue) {
         if (command instanceof Function) {
             priority = priority || 0;
             queue.enqueue(priority, command);
@@ -65,12 +70,13 @@ export class Scheduler {
         this.postDrawCommands = new PriorityQueue();
 
         this.timestep = 1000 / this.maxFrameRate;
+        this.fps = this.maxFrameRate;
 
         window.addEventListener('blur', this.suspend);
     }
 
     @bind
-    public suspend(e) {
+    public suspend(e: Event) {
         if (!(e && e.type === 'blur' && this.suspendOnBlur === false)) {
             this.appState.setState(AppState.Suspended);
             cancelAnimationFrame(this.animationFrame);
@@ -100,7 +106,7 @@ export class Scheduler {
      * @param operation
      * @param order
      */
-    public schedule(operation, order: number) {
+    public schedule(operation: ICommand, order: number) {
         Scheduler.scheduleCommand(operation, order, this.updateOperations);
     }
 
@@ -109,7 +115,7 @@ export class Scheduler {
      * @param operation
      * @param zIndex
      */
-    public draw(operation, zIndex: number) {
+    public draw(operation: ICommand, zIndex: number) {
         Scheduler.scheduleCommand(operation, zIndex, this.drawCommands);
     }
 
@@ -118,7 +124,7 @@ export class Scheduler {
      * @param operation
      * @param zIndex
      */
-    public postProcess(operation, zIndex: number) {
+    public postProcess(operation: ICommand, zIndex: number) {
         Scheduler.scheduleCommand(operation, zIndex, this.postDrawCommands);
     }
 
@@ -133,7 +139,7 @@ export class Scheduler {
      * Toggles suspension of the main loop when the window is blurred
      * @param flag
      */
-    public setSuspendOnBlur(flag) {
+    public setSuspendOnBlur(flag: boolean) {
         this.suspendOnBlur = typeof flag !== 'undefined' ? flag : true;
     }
 
@@ -175,7 +181,7 @@ export class Scheduler {
      * Update the FPS value
      * @param totalElapsedTime
      */
-    private updateFPS(totalElapsedTime) {
+    private updateFPS(totalElapsedTime: number) {
         this.framesThisSecond++;
         if (totalElapsedTime > this.lastFPSUpdate + 1000) {
             const weightFactor = 0.25;
@@ -190,7 +196,7 @@ export class Scheduler {
      * Isaac Sukin
      * http://www.isaacsukin.com/news/2015/01/detailed-explanation-javascript-game-loops-and-timing
      */
-    private mainLoop() {
+    @bind private mainLoop() {
         const frameTime =  (new Date()).getTime();
         this.deltaTime += frameTime - this.lastFrameTime;
         this.lastFrameTime = frameTime;
@@ -211,7 +217,7 @@ export class Scheduler {
             }
         }
 
-        this.draw(this.deltaTime, this.elapsedTime);
+        this.doDraw(this.deltaTime, this.elapsedTime);
         this.animationFrame = requestAnimationFrame(this.mainLoop);
     }
 }

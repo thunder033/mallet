@@ -2,7 +2,7 @@ import {buildTree} from './lib/injector-plus';
 
 const MDT = {
     component: {
-        renderTarget: 'mallet-render-target',
+        renderTarget: 'malletRenderTarget',
     },
     config: {
         Path: '',
@@ -14,14 +14,20 @@ const MDT = {
         ScaleFactor: '',
     },
     ng: {
-        $element: '',
-        $location: '',
-        $q: '',
-        $rootScope: '',
-        $scope: '',
-        $socket: '',
-        $state: '',
-        $window: '',
+        $element: '$element',
+        $location: '$location',
+        $window: '$window',
+        $http: '$http',
+        $locationProvider: '$locationProvider',
+        $q: '$q',
+        $rootScope: '$rootScope',
+        $scope: '$scope',
+        $socket: 'socketFactory',
+        $state: '$state',
+        $stateParams: '$stateParams',
+        $stateProvider: '$stateProvider',
+        $timeout: '$timeout',
+        $urlService: '$urlService',
     },
     AsyncRequest: '',
     Camera: '',

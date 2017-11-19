@@ -1,4 +1,8 @@
 import 'reflect-metadata';
+import {Level, Logger} from './logger';
+import {IController} from 'angular';
+
+const logger = new Logger();
 
 export interface InjectableMethodCtor {
     new(): InjectableMethod;
@@ -27,6 +31,7 @@ export function inject(identifier: string): ParameterDecorator {
 
         const annotations: string[] = Reflect.getOwnMetadata(annotationKey, target) || new Array(target.length);
         annotations[index] = identifier;
+        logger.verbose(`Add injection ${identifier} to ${target.name}`);
         Reflect.defineMetadata(annotationKey, annotations, target);
     };
 }
@@ -53,6 +58,7 @@ export function ngAnnotate(provider: Function | InjectableMethodCtor): Array<str
             expected ${method.length} annotations and found ${annotations.length}`);
     }
 
+    logger.verbose(`Annotated ${annotations.length} dependencies for ${provider.name}`);
     return [...annotations, method];
 }
 
