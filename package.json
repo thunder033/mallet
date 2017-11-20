@@ -5,6 +5,7 @@
   "main": "index.js",
   "browser": "./test/app/test.module.js",
   "scripts": {
+    "fastBuild": "tsc -p ./",
     "build": "tslint \"src/**/*.ts\" \"test/**/*.ts\" && tsc -p ./ && tsc -p ./test",
     "pretest": "npm run build",
     "test": "./node_modules/.bin/mocha --reporter spec test/**/*.js",
@@ -17,6 +18,7 @@
     "buildRun": "tsc -p ./ && node ./src/app.js",
     "depUpdate": "npm i && npm link pulsar-lib",
     "bundleTest:2d": "tsc -p ./test && browserify --debug test/app/test-2d.module.js -o test/build/bundle-2d.js",
+    "bundleTest:webgl": "tsc -p ./test && browserify --debug test/app/test-webgl.module.js -o test/build/bundle-webgl.js"
   },
   "repository": {
     "type": "git",
@@ -36,23 +38,24 @@
   "homepage": "https://github.com/thunder033/mallet#readme",
   "dependencies": {},
   "devDependencies": {
-    "typescript": "2.5.3",
     "@types/angular": "^1.6.32",
     "@types/angular-ui-router": "^1.1.39",
+    "@types/chai": "^3.4.35",
+    "@types/mocha": "^2.2.39",
     "@types/node": "^7.0.5",
     "@types/q": "0.0.32",
     "@types/socket.io": "^1.4.28",
-    "@types/chai": "^3.4.35",
-    "@types/mocha": "^2.2.39",
     "@uirouter/angularjs": "^1.0.6",
-    "bind-decorator": "^1.0.11",
     "angular": "^1.6.6",
+    "bind-decorator": "^1.0.11",
+    "browserify-shader": "^0.1.2",
     "chai": "^3.5.0",
     "grunt": "^1.0.1",
-    "pulsar-lib": "github:thunder033/pulsar-lib",
     "mocha": "^3.2.0",
     "mocha-typescript": "^1.0.22",
+    "pulsar-lib": "github:thunder033/pulsar-lib",
     "reflect-metadata": "^0.1.10",
-    "tslint": "^5.7.0"
+    "tslint": "^5.7.0",
+    "typescript": "2.5.3"
   }
 }

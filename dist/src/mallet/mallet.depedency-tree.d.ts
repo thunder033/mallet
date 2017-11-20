@@ -1,5 +1,6 @@
 declare const MDT: {
     component: {
+        webGLStage: string;
         renderTarget: string;
     };
     config: {
@@ -42,5 +43,9 @@ declare const MDT: {
     StateMachine: string;
     Thread: string;
     RenderTarget: string;
+    webgl: {
+        ShaderSource: string;
+        WebGLStage: string;
+    };
 };
 export { MDT };

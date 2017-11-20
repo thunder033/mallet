@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const injector_plus_1 = require("./lib/injector-plus");
 const MDT = {
     component: {
+        webGLStage: 'malletWebglStage',
         renderTarget: 'malletRenderTarget',
     },
     config: {
@@ -45,6 +46,10 @@ const MDT = {
     StateMachine: '',
     Thread: '',
     RenderTarget: '',
+    webgl: {
+        ShaderSource: '',
+        WebGLStage: '',
+    },
 };
 exports.MDT = MDT;
 injector_plus_1.buildTree(MDT, 'mallet');

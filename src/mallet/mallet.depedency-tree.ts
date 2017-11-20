@@ -2,6 +2,7 @@ import {buildTree} from './lib/injector-plus';
 
 const MDT = {
     component: {
+        webGLStage: 'malletWebglStage',
         renderTarget: 'malletRenderTarget',
     },
     config: {
@@ -44,6 +45,10 @@ const MDT = {
     StateMachine: '',
     Thread: '',
     RenderTarget: '',
+    webgl: {
+        ShaderSource: '',
+        WebGLStage: '',
+    },
 };
 
 buildTree(MDT, 'mallet');
