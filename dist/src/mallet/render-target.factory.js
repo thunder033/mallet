@@ -80,9 +80,24 @@ class RenderTargetWebGL extends RenderTarget {
     getContext() {
         return super.getContext();
     }
+    getProgram() {
+        return this.program;
+    }
     getNewContext() {
-        return (this.canvas.getContext(CanvasContext.webgl) ||
+        const gl = (this.canvas.getContext(CanvasContext.webgl) ||
             this.canvas.getContext(CanvasContext.webglExperimental));
+        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        this.program = gl.createProgram();
+        return gl;
+    }
+    isWebGLSupported() {
+        try {
+            const canvas = document.createElement('canvas');
+            return !!(window.WebGLRendingContext && this.getNewContext());
+        }
+        catch (e) {
+            return false;
+        }
     }
 }
 exports.RenderTargetWebGL = RenderTargetWebGL;

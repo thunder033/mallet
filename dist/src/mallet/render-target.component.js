@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const injector_plus_1 = require("./lib/injector-plus");
 const mallet_depedency_tree_1 = require("./mallet.depedency-tree");
 const scheduler_service_1 = require("./scheduler.service");
+const angular_1 = require("angular");
 const bind_decorator_1 = require("bind-decorator");
 const logger_1 = require("./lib/logger");
 let RenderTargetCtrl = class RenderTargetCtrl {
@@ -25,8 +26,21 @@ let RenderTargetCtrl = class RenderTargetCtrl {
         this.scheduler = scheduler;
         this.renderTargetFactory = renderTargetFactory;
         this.scale = 1;
-        this.QUARTER_RENDER_NAME = 'quarterRender';
         this.NO_SUPPORT_MESSAGE = 'Your browser does not support canvas. Please consider upgrading.';
+    }
+    static getController($element) {
+        // https://stackoverflow.com/questions/21995108/angular-get-controller-from-element
+        const targetTag = 'mallet-render-target';
+        const renderTarget = $element[0].getElementsByTagName(targetTag);
+        if (!renderTarget || !renderTarget.length) {
+            throw new ReferenceError(`Failed to find render target ${targetTag} in component ${$element[0]}`);
+        }
+        const ctrl = angular_1.element(renderTarget).controller(mallet_depedency_tree_1.MDT.component.renderTarget);
+        if (!ctrl) {
+            const err = `Failed to get controller from render target. Ensure this function is being called in $postLink or later.`;
+            throw new ReferenceError(err);
+        }
+        return ctrl;
     }
     $onInit() {
         // Create the render target
@@ -39,9 +53,6 @@ let RenderTargetCtrl = class RenderTargetCtrl {
         const canvas = this.renderTarget.getCanvas();
         canvas.innerHTML = this.NO_SUPPORT_MESSAGE;
         this.$element.append(canvas);
-        // figure out how to re-impl
-        // this.easel.createNewCanvas(this.QUARTER_RENDER_NAME, this.canvas.width / 2, this.canvas.height / 2);
-        // this.canvas.style.background = '#000';
         this.scheduler.schedule(this.update, 0);
         window.addEventListener('resize', this.onResize);
     }
@@ -51,8 +62,8 @@ let RenderTargetCtrl = class RenderTargetCtrl {
     getContext() {
         return this.ctx;
     }
-    onResize() {
-        this.renderTarget.resize();
+    getRenderTarget() {
+        return this.renderTarget;
     }
     update() {
         const lowResScale = 0.75;
@@ -66,13 +77,9 @@ let RenderTargetCtrl = class RenderTargetCtrl {
             this.renderTarget.resize(this.scale);
         }
         this.scheduler.draw(() => this.renderTarget.clear(), -1);
-        // this.scheduler.draw(() => this.easel.clearCanvas(this.easel.getContext(this.QUARTER_RENDER_NAME)), -1);
-        // if (this.mState.is(this.mState.Debug)) {
-        //     this.scheduler.draw(() => {
-        //         this.ctx.fillStyle = '#fff';
-        //         this.ctx.fillText(`FPS: ${~~this.scheduler.FPS}`, 25, 25);
-        //     }, 1);
-        // }
+    }
+    onResize() {
+        this.renderTarget.resize();
     }
 };
 __decorate([
@@ -80,13 +87,13 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
-], RenderTargetCtrl.prototype, "onResize", null);
+], RenderTargetCtrl.prototype, "update", null);
 __decorate([
     bind_decorator_1.default,
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
-], RenderTargetCtrl.prototype, "update", null);
+], RenderTargetCtrl.prototype, "onResize", null);
 RenderTargetCtrl = __decorate([
     __param(0, injector_plus_1.inject(mallet_depedency_tree_1.MDT.Logger)),
     __param(1, injector_plus_1.inject(mallet_depedency_tree_1.MDT.ng.$element)),
@@ -97,6 +104,15 @@ RenderTargetCtrl = __decorate([
 ], RenderTargetCtrl);
 exports.RenderTargetCtrl = RenderTargetCtrl;
 class RenderTarget2DCtrl extends RenderTargetCtrl {
+    update() {
+        super.update();
+        if (this.mState.is(this.mState.Debug)) {
+            this.scheduler.draw(() => {
+                this.ctx.fillStyle = '#fff';
+                this.ctx.fillText(`FPS: ${~~this.scheduler.FPS}`, 25, 25);
+            }, 1);
+        }
+    }
 }
 exports.options = {
     controller: injector_plus_1.ngAnnotate(RenderTargetCtrl),

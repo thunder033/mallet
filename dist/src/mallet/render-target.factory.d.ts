@@ -34,9 +34,12 @@ export declare class RenderTarget2D extends RenderTarget {
 }
 export declare class RenderTargetWebGL extends RenderTarget {
     protected ctx: WebGLRenderingContext;
+    protected program: WebGLProgram;
     clear(): void;
     getContext(): WebGLRenderingContext;
+    getProgram(): WebGLProgram;
     protected getNewContext(): WebGLRenderingContext;
+    private isWebGLSupported();
 }
 export interface IRenderTargetCtor {
     new (...args: any[]): IRenderTarget;
