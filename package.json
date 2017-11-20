@@ -16,7 +16,7 @@
     "push:major": "npm run build && npm version major",
     "buildRun": "tsc -p ./ && node ./src/app.js",
     "depUpdate": "npm i && npm link pulsar-lib",
-    "bundleTest": "tsc -p ./test && browserify --debug test/app/test.module.js -o test/build/bundle.js"
+    "bundleTest:2d": "tsc -p ./test && browserify --debug test/app/test-2d.module.js -o test/build/bundle-2d.js",
   },
   "repository": {
     "type": "git",
