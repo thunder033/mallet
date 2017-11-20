@@ -24,7 +24,19 @@ export class RenderTargetCtrl implements IController {
         // https://stackoverflow.com/questions/21995108/angular-get-controller-from-element
         const targetTag = 'mallet-render-target';
         const renderTarget = $element[0].getElementsByTagName(targetTag);
-        return element(renderTarget).controller(MDT.component.renderTarget);
+
+        if (!renderTarget || !renderTarget.length) {
+            throw new ReferenceError(`Failed to find render target ${targetTag} in component ${$element[0]}`);
+        }
+
+        const ctrl = element(renderTarget).controller(MDT.component.renderTarget);
+
+        if (!ctrl) {
+            const err = `Failed to get controller from render target. Ensure this function is being called in $postLink or later.`;
+            throw new ReferenceError(err);
+        }
+
+        return ctrl;
     }
 
     constructor(
@@ -58,6 +70,10 @@ export class RenderTargetCtrl implements IController {
 
     public getContext(): RenderingContext {
         return this.ctx;
+    }
+
+    public getRenderTarget(): IRenderTarget {
+        return this.renderTarget;
     }
 
     @bind

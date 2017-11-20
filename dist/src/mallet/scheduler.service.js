@@ -18,6 +18,9 @@ const logger_service_1 = require("./logger.service");
 const pulsar_lib_1 = require("pulsar-lib");
 const bind_decorator_1 = require("bind-decorator");
 const app_state_service_1 = require("./app-state.service");
+/**
+ * Executes and monitors the engine loop
+ */
 let Scheduler = class Scheduler {
     constructor(maxFrameRate, appState, logger) {
         this.maxFrameRate = maxFrameRate;
@@ -44,6 +47,7 @@ let Scheduler = class Scheduler {
         this.drawCommands = new pulsar_lib_1.PriorityQueue();
         this.postDrawCommands = new pulsar_lib_1.PriorityQueue();
         this.timestep = 1000 / this.maxFrameRate;
+        this.fps = this.maxFrameRate;
         window.addEventListener('blur', this.suspend);
     }
     static scheduleCommand(command, priority, queue) {

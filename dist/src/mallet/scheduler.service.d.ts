@@ -1,6 +1,9 @@
 import { Logger } from './logger.service';
 import { AppState } from './app-state.service';
 export declare type ICommand = (deltaTime: number, totalTime: number) => void;
+/**
+ * Executes and monitors the engine loop
+ */
 export declare class Scheduler {
     private maxFrameRate;
     private appState;
