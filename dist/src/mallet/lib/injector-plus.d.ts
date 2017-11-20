@@ -1,4 +1,6 @@
+/// <reference types="angular" />
 import 'reflect-metadata';
+import { IServiceProvider } from 'angular';
 export interface InjectableMethodCtor {
     new (): InjectableMethod;
 }
@@ -11,6 +13,9 @@ export interface InjectableMethod {
  * @returns {ParameterDecorator}
  */
 export declare function inject(identifier: string): ParameterDecorator;
+export declare function ngAnnotateProvider(constructor: {
+    new (...args): IServiceProvider;
+}): void;
 /**
  * Construct an angular annotation array from dependency metadata
  * @param {Function} provider

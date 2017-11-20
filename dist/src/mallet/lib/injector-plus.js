@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const logger_1 = require("./logger");
 const logger = new logger_1.Logger();
-logger.config({ level: logger_1.Level.Verbose });
 const injectableMethodName = 'exec';
+const providerGet = '$get';
 const annotationKey = Symbol('dependencies');
 /**
  * Define the injection annotation for a given angular provider
@@ -14,8 +14,8 @@ const annotationKey = Symbol('dependencies');
 function inject(identifier) {
     // tslint:disable-next-line:callable-types
     return function annotation(target, key, index) {
-        if (key && key !== injectableMethodName) {
-            throw new TypeError('Dependencies can only be injected on constructor or injectable method executor');
+        if (key && key !== injectableMethodName && key !== providerGet) {
+            throw new TypeError('Dependencies can only be injected on constructor, injectable method executor, or provider');
         }
         else if (key) {
             target = target.constructor;
@@ -27,6 +27,18 @@ function inject(identifier) {
     };
 }
 exports.inject = inject;
+function ngAnnotateProvider(constructor) {
+    const provider = constructor.prototype;
+    const annotations = Reflect.getOwnMetadata(annotationKey, constructor) || [];
+    const method = provider.$get;
+    if (annotations.length !== method.length) {
+        throw new Error(`Annotations are not defined for all dependencies of ${method.name}: 
+            expected ${method.length} annotations and found ${annotations.length}`);
+    }
+    logger.verbose(`Annotated ${annotations.length} provider dependencies for ${constructor.name}`);
+    provider.$get = [...annotations, method];
+}
+exports.ngAnnotateProvider = ngAnnotateProvider;
 /**
  * Construct an angular annotation array from dependency metadata
  * @param {Function} provider

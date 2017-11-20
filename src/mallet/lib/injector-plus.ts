@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import {Level, Logger} from './logger';
-import {IController} from 'angular';
+import {IController, IServiceProvider} from 'angular';
 
 const logger = new Logger();
 
@@ -13,6 +13,7 @@ export interface InjectableMethod {
 }
 
 const injectableMethodName = 'exec';
+const providerGet = '$get';
 const annotationKey = Symbol('dependencies');
 
 /**
@@ -23,8 +24,8 @@ const annotationKey = Symbol('dependencies');
 export function inject(identifier: string): ParameterDecorator {
     // tslint:disable-next-line:callable-types
     return function annotation(target: {(...args): any} | Function, key: string, index: number) {
-        if (key && key !== injectableMethodName) {
-            throw new TypeError('Dependencies can only be injected on constructor or injectable method executor');
+        if (key && key !== injectableMethodName && key !== providerGet) {
+            throw new TypeError('Dependencies can only be injected on constructor, injectable method executor, or provider');
         } else if (key) {
             target = target.constructor;
         }
@@ -34,6 +35,22 @@ export function inject(identifier: string): ParameterDecorator {
         logger.verbose(`Add injection ${identifier} to ${target.name}`);
         Reflect.defineMetadata(annotationKey, annotations, target);
     };
+}
+
+export function ngAnnotateProvider(constructor: {new(...args): IServiceProvider}) {
+    const provider: IServiceProvider = constructor.prototype;
+    const annotations: string[] = Reflect.getOwnMetadata(annotationKey, constructor) || [];
+    const method = provider.$get;
+
+    if (annotations.length !== method.length) {
+        throw new Error(
+            `Annotations are not defined for all dependencies of ${method.name}: 
+            expected ${method.length} annotations and found ${annotations.length}`);
+    }
+
+    logger.verbose(`Annotated ${annotations.length} provider dependencies for ${constructor.name}`);
+
+    provider.$get = [...annotations, method];
 }
 
 /**
