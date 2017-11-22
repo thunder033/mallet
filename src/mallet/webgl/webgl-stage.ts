@@ -9,15 +9,11 @@ import bind from 'bind-decorator';
 import {VertexShader2D} from './vertex-shader';
 import {IPromise, IQService} from 'angular';
 import {IShaderSource} from './shader-source.provider';
+import {IWebGLStageContext} from './webgl-resource';
 
 export interface IWebGLStage {
     set(renderTarget: RenderTargetWebGL): void;
     present(dt: number): void;
-}
-
-export interface IWebGLStageContext {
-    gl: WebGLRenderingContext;
-    program: WebGLProgram;
 }
 
 export class WebGLStage implements IWebGLStage {
@@ -48,11 +44,11 @@ export class WebGLStage implements IWebGLStage {
         this.renderTarget = renderTarget;
         this.gl = renderTarget.getContext();
         this.program = renderTarget.getProgram();
-        this.context = {gl: this.gl, program: this.program};
+        this.context = {gl: this.gl, program: null, logger: this.logger};
 
         this.logger.info(this.shaderSource);
 
-        this.glFactory = new WebGLResourceFactory(this.gl);
+        this.glFactory = new WebGLResourceFactory(this.context);
 
         const gl = this.gl;
         const program = this.program;

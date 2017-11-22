@@ -1,5 +1,4 @@
-import {WebGLResource} from './webgl-resource';
-import {IWebGLStageContext} from './webgl-stage';
+import {IWebGLResource, IWebGLStageContext, WebGLResource} from './webgl-resource';
 
 export interface IShader {
     prepare(context: IWebGLStageContext): void;
@@ -22,8 +21,9 @@ export class Shader extends WebGLResource implements IShader {
     protected id: string;
     protected shader: WebGLShader;
 
-    constructor(gl: WebGLRenderingContext, options: IShaderOptions) {
-        super();
+    constructor(context: IWebGLStageContext, protected options: IShaderOptions) {
+        super(context);
+        const {gl} = context;
         this.id = options.id;
         const shaderSource = options.src || document.getElementById(options.id).textContent;
 

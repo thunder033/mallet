@@ -1,14 +1,32 @@
 
-export interface IWebGLResourceCtor<Resource extends IWebGLResource, Options> {
-    new(context: WebGLRenderingContext, options: Options): Resource;
+import {Logger} from '../lib/logger';
+
+export interface IWebGLStageContext {
+    gl: WebGLRenderingContext;
+    program: WebGLProgram;
+    logger: Logger;
 }
 
+export interface IWebGLResourceCtor<Resource extends IWebGLResource, Options> {
+    new(context: IWebGLStageContext, options: Options): Resource;
+}
+
+function bindGLContext() {
+
+}
+
+type ClassMethod<T, R> =  {[M in keyof T]: (context: IWebGLStageContext) => R};
+
 export interface IWebGLResource {
-    release?(): void;
+    release(): void;
 }
 
 export abstract class WebGLResource implements IWebGLResource {
-    public release(): void {
-        // no-op
+    constructor(protected context: IWebGLStageContext) {
     }
+    public abstract release(): void;
+
+    // protected contextExecute<T extends WebGLResource>(method: keyof T): any {
+    //     return this[method as string](this.context);
+    // }
 }

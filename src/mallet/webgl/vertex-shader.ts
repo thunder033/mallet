@@ -1,10 +1,10 @@
 
-import {IShaderOptions, Shader} from './shader';
-import {IWebGLStageContext} from './webgl-stage';
+import {Attrib, IAttribDescription, IShaderOptions, Shader} from './shader';
+import {IWebGLStageContext} from './webgl-resource';
 
 export class VertexShader2D extends Shader {
-    constructor(gl: WebGLRenderingContext, options: IShaderOptions) {
-        super(gl, options);
+    constructor(context: IWebGLStageContext, options: IShaderOptions) {
+        super(context, options);
     }
 
     public prepare({gl, program}: IWebGLStageContext): void {
