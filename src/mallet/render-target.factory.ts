@@ -93,7 +93,6 @@ export class RenderTarget2D extends RenderTarget {
 
 export class RenderTargetWebGL extends RenderTarget {
     protected ctx: WebGLRenderingContext;
-    protected program: WebGLProgram;
 
     public clear() {
         this.logger.verbose(`clear render target ${this.canvas.id || this.canvas.className}`);
@@ -104,16 +103,11 @@ export class RenderTargetWebGL extends RenderTarget {
         return super.getContext() as WebGLRenderingContext;
     }
 
-    public getProgram(): WebGLProgram {
-        return this.program;
-    }
-
     protected getNewContext(): WebGLRenderingContext {
         const gl = (
             this.canvas.getContext(CanvasContext.webgl) ||
             this.canvas.getContext(CanvasContext.webglExperimental)) as WebGLRenderingContext;
         gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-        this.program = gl.createProgram();
         return gl;
     }
 

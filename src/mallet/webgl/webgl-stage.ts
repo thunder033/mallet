@@ -10,6 +10,7 @@ import {VertexShader2D} from './vertex-shader';
 import {IPromise, IQService} from 'angular';
 import {IShaderSource} from './shader-source.provider';
 import {IWebGLStageContext} from './webgl-resource';
+import {IShaderProgram, ShaderProgram} from './shader-program';
 
 export interface IWebGLStage {
     set(renderTarget: RenderTargetWebGL): void;
@@ -20,7 +21,7 @@ export class WebGLStage implements IWebGLStage {
     private renderTarget: RenderTargetWebGL;
     private gl: WebGLRenderingContext;
     private glFactory: WebGLResourceFactory;
-    private program: WebGLProgram;
+    private program: IShaderProgram;
     private context: IWebGLStageContext;
 
     private verts1 = new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0]);
@@ -43,8 +44,9 @@ export class WebGLStage implements IWebGLStage {
     public set(renderTarget: RenderTargetWebGL): IPromise<boolean> {
         this.renderTarget = renderTarget;
         this.gl = renderTarget.getContext();
-        this.program = renderTarget.getProgram();
         this.context = {gl: this.gl, program: null, logger: this.logger};
+        this.program = new ShaderProgram(this.context, {shaders: });
+        this.context.program = this.program.getGLProgram();
 
         this.logger.info(this.shaderSource);
 
