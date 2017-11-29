@@ -2,11 +2,11 @@
   "name": "mallet",
   "version": "1.0.1",
   "description": "Real-time Angular rendering engine written in TypeScript, based on WebGL & Canvas",
-  "main": "index.js",
+  "main": "dist/mallet.js",
   "browser": "./test/app/test.module.js",
   "scripts": {
-    "fastBuild": "tsc -p ./",
-    "build": "tslint \"src/**/*.ts\" \"test/**/*.ts\" && tsc -p ./ && tsc -p ./test",
+    "fastBuild": "tsc -p ./ && browserify -d -s mallet --noparse=angular src/mallet/index.js -o dist/index.js",
+    "build": "tslint \"src/**/*.ts\" \"test/**/*.ts\" && tsc -p ./ && tsc -p ./test && dts-generator --project src --out dist/typingsx.d.ts",
     "pretest": "npm run build",
     "test": "./node_modules/.bin/mocha --reporter spec test/**/*.js",
     "preversion": "npm test",
@@ -18,7 +18,7 @@
     "buildRun": "tsc -p ./ && node ./src/app.js",
     "depUpdate": "npm i && npm link pulsar-lib",
     "bundleTest:2d": "tsc -p ./test && browserify --debug test/app/test-2d.module.js -o test/build/bundle-2d.js",
-    "bundleTest:webgl": "tsc -p ./test && browserify --debug test/app/test-webgl.module.js -o test/build/bundle-webgl.js",
+    "bundleTest:webgl": "tsc -p ./test && browserify -d --im --noparse=mallet --noparse=angular test/app/test-webgl.module.js -o test/build/bundle-webgl.js",
     "updateApp:webgl": "npm run fastBuild && npm run bundleTest:webgl"
   },
   "repository": {

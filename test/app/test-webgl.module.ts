@@ -1,11 +1,15 @@
 import * as angular from 'angular';
 import {IAugmentedJQuery, IController} from 'angular';
-import {inject, ngAnnotate} from 'mallet/lib/injector-plus';
-import {MDT} from 'mallet/mallet.depedency-tree';
-import {Logger} from 'mallet/logger.service';
-import {Scheduler} from 'mallet/scheduler.service';
-import {malletWebGL} from 'mallet/webgl/webgl.module';
-import {IWebGLStage} from 'mallet/webgl/webgl-stage';
+import {
+    inject,
+    IWebGLStage,
+    Level,
+    Logger,
+    malletWebGL,
+    MDT,
+    ngAnnotate,
+    Scheduler,
+} from 'mallet';
 
 const testApp = angular.module('mallet-test', [malletWebGL.name]);
 

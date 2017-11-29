@@ -1,12 +1,16 @@
-import {mallet} from 'mallet/mallet.module';
 import * as angular from 'angular';
 import {IAugmentedJQuery, IController} from 'angular';
-import {inject, ngAnnotate} from 'mallet/lib/injector-plus';
-import {MDT} from 'mallet/mallet.depedency-tree';
-import {Logger} from 'mallet/logger.service';
-import {RenderTargetCtrl} from 'mallet/render-target.component';
-import {IRenderTargetCtor, RenderTarget2D} from 'mallet/render-target.factory';
-import {Scheduler} from 'mallet/scheduler.service';
+import {
+    inject,
+    IRenderTargetCtor,
+    Logger,
+    mallet,
+    MDT,
+    ngAnnotate,
+    RenderTarget2D,
+    RenderTargetCtrl,
+    Scheduler,
+} from 'mallet';
 
 const testApp = angular.module('mallet-test', [mallet.name]);
 

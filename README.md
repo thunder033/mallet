@@ -5,7 +5,7 @@
 ### Windows
 In an **Administrator** command prompt (apprently **not cmder**), using absolute paths:
 
-`mklink /d <mallet path>\node_modules\mallet <mallet path>\dist\src\mallet`
+`mklink /d <mallet path>\node_modules\mallet <mallet path>\dist\`
 
 ### Linux
 

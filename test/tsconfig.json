@@ -1,11 +1,8 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "moduleResolution": "node",
     "target": "es6",
-    "experimentalDecorators": true,
-    "baseUrl": "../",
-    "paths": {
-      "mallet/*": ["src/mallet/*"]
-    }
+    "experimentalDecorators": true
   }
 }
