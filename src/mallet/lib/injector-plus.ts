@@ -37,6 +37,11 @@ export function inject(identifier: string): ParameterDecorator {
     };
 }
 
+// tslint:disable-next-line:no-namespace
+export namespace inject {
+    export const provider = (identifier: string) => inject(`${identifier}Provider`);
+}
+
 export function ngAnnotateProvider(constructor: {new(...args): IServiceProvider}) {
     const provider: IServiceProvider = constructor.prototype;
     const annotations: string[] = Reflect.getOwnMetadata(annotationKey, constructor) || [];

@@ -45,6 +45,7 @@ const MDT = {
     StateMachine: '',
     Thread: '',
     RenderTarget: '',
+    Library: '',
     webgl: {
         ShaderSource: '',
         WebGLStage: '',

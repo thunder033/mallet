@@ -6,11 +6,14 @@ import {AppState} from './app-state.service';
 import {Scheduler} from './scheduler.service';
 import {Logger} from './logger.service';
 import {options as renderTargetOptions} from './render-target.component';
+import {LibraryProvider} from './library.provider';
 
 // tslint:disable:no-var-requires
 export const mallet = require('angular').module('mallet', [
     require('./mallet.constants'),
 ]);
+
+mallet.provider(MDT.Library, ngAnnotate(LibraryProvider));
 
 mallet.service(MDT.Scheduler, ngAnnotate(Scheduler));
 mallet.service(MDT.AppState, ngAnnotate(AppState));

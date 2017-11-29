@@ -3,26 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Mallet Test App</title>
-
-    <script type="x-shader/x-fragment" id="fragment-shader">#version 100
-// fragment shaders don't hvae default precision, so define
-// as mediump, "medium precision"
-precision mediump float;
-
-void main() {
-// gl_FragColor is the outpout of the fragment
-gl_FragColor = vec4(1, 0, 0.5, 1); //return magenta
-}</script>
-
-    <script type="x-shader/x-vertex" id="2d-vertex-shader">#version 100
-//an attribute will receive data from a buffer
-attribute vec2 a_position;
-
-//starting point
-void main() {
-gl_Position = vec4(a_position, 0, 1);
-}</script>
-
     <script src="build/bundle-webgl.js"></script>
     <style>
         html, body, main, test-harness, mallet-webgl-stage, mallet-render-target, canvas {
