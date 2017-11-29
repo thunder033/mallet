@@ -18,7 +18,8 @@
     "buildRun": "tsc -p ./ && node ./src/app.js",
     "depUpdate": "npm i && npm link pulsar-lib",
     "bundleTest:2d": "tsc -p ./test && browserify --debug test/app/test-2d.module.js -o test/build/bundle-2d.js",
-    "bundleTest:webgl": "tsc -p ./test && browserify --debug test/app/test-webgl.module.js -o test/build/bundle-webgl.js"
+    "bundleTest:webgl": "tsc -p ./test && browserify --debug test/app/test-webgl.module.js -o test/build/bundle-webgl.js",
+    "updateApp:webgl": "npm run fastBuild && npm run bundleTest:webgl"
   },
   "repository": {
     "type": "git",
