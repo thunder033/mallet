@@ -11,10 +11,6 @@ export interface IWebGLResourceCtor<Resource extends IWebGLResource, Options> {
     new(context: IWebGLStageContext, options: Options): Resource;
 }
 
-function bindGLContext() {
-
-}
-
 type ClassMethod<T, R> =  {[M in keyof T]: (context: IWebGLStageContext) => R};
 
 export interface IWebGLResource {
