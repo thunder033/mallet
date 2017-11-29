@@ -21,6 +21,7 @@ uniform mat4 view;
 uniform mat4 projection;
 
 varying highp vec4 vColor;
+varying highp vec3 vNormal;
 //starting point
 void main() {
     // The vertex's position (input.position) must be converted to world space,
@@ -34,7 +35,9 @@ void main() {
     mat4 projectionViewWorld = projection * world * view;
    
     gl_Position = projectionViewWorld * vec4(a_position, 1);
+    
     vColor = vec4(a_color, 1.0);
+    vNormal = vec3(world * view * vec4(a_normal, 1));
 }`,
     // language=GLSL
     fragmentShader: `#version 100
@@ -43,11 +46,27 @@ void main() {
 precision mediump float;
 
 varying highp vec4 vColor;
+varying highp vec3 vNormal;
+
+struct Light {
+    vec4 ambientColor;
+    vec4 diffuseColor;
+    vec3 direction;
+};
+
+// uniform int numLights;
+uniform Light light;
+
+vec4 getLightColor(Light light, vec3 normal) {
+    vec3 lightDir = normalize(-light.direction);
+    float lightAmt = clamp(dot(lightDir, normal), 0.0, 1.0);
+    
+    return light.diffuseColor * lightAmt;   
+}
 
 void main() {
-// gl_FragColor is the outpout of the fragment
-//gl_FragColor = vec4(1, 0, 0.5, 1); //return magenta
-gl_FragColor = vColor;
+    // gl_FragColor is the outpout of the fragment
+    gl_FragColor = light.ambientColor * vColor + getLightColor(light, vNormal) * vColor;
 }`};
 
 const shaderConfig: {[id: string]: IShaderOptions} = {
@@ -71,7 +90,15 @@ const shaderConfig: {[id: string]: IShaderOptions} = {
         id: 'fragment-shader',
         src: embeddedShaders.fragmentShader,
         type: ShaderType.FRAGMENT_SHADER,
-        spec: {},
+        spec: {
+            uniforms: {
+                light: {
+                    ambientColor: GLUniformType.uniform4f,
+                    diffuseColor: GLUniformType.uniform4f,
+                    direction: GLUniformType.uniform3f,
+                },
+            },
+        },
     },
 };
 

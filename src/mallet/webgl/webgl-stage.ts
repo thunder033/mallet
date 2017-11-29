@@ -29,12 +29,14 @@ export class WebGLStage implements IWebGLStage {
     private program: IShaderProgram;
     private context: IWebGLStageContext;
 
+    // Rendering Geometry Uniforms
     private setViewMatrix: GLMatrixSetter;
     private setWorldMatrix: GLMatrixSetter;
     private setProjectionMatrix: GLMatrixSetter;
     private identity = mat4.create();
     private activeCamera: ICamera;
 
+    // Temp Transform info
     private cubeZ: number;
     private cubeDelta: number;
     private cubeRot: number;
@@ -64,6 +66,10 @@ export class WebGLStage implements IWebGLStage {
             this.setViewMatrix = this.program.getUniformSetter('view');
             this.setWorldMatrix = this.program.getUniformSetter('world');
             this.setProjectionMatrix = this.program.getUniformSetter('projection');
+
+            this.program.getUniformSetter('light.ambientColor')(0.1, 0.1, 0.1, 1.0);
+            this.program.getUniformSetter('light.diffuseColor')(0.8, 0.8, 0.8, 1.0);
+            this.program.getUniformSetter('light.direction')(-1, 0, 0);
 
             // TODO: create materials
 

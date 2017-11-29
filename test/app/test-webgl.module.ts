@@ -24,6 +24,7 @@ class TestCtrl implements IController {
         @inject(MDT.ng.$element) private $element: IAugmentedJQuery,
         @inject(MDT.Logger) private logger: Logger) {
         logger.info('Running Test Controller');
+        this.logger.config({level: Level.Debug});
     }
 
     public $postLink(): void {
