@@ -4,7 +4,7 @@ import bind from 'bind-decorator';
 import {IWebGLResource, IWebGLStageContext, WebGLResource} from './webgl-resource';
 import {BufferFormat, IBufferFormat} from './buffer-format';
 
-interface IProgramOptions {
+export interface IProgramOptions {
     shaders: {vertex: IShaderOptions, fragment: IShaderOptions};
 }
 
@@ -19,18 +19,27 @@ export class ShaderProgram extends WebGLResource implements IShaderProgram {
     constructor(protected context: IWebGLStageContext, config: IProgramOptions) {
         super(context);
         this.context.program = context.gl.createProgram();
-        const {gl, program} = this.context;
+        const {gl, program, logger} = this.context;
 
-        const vertexShader = this.createShader(config.shaders.vertex);
-        gl.attachShader(program, vertexShader);
+        const vertexShader: IShader = this.createShader(config.shaders.vertex);
+        gl.attachShader(program, vertexShader.getShader());
         vertexShader.release();
 
-        this.bufferFormat = new BufferFormat(this.context, {shaderSpec: config.shaders.vertex.spec});
-
         const fragmentShader = this.createShader(config.shaders.fragment);
-        gl.attachShader(program, fragmentShader);
+        gl.attachShader(program, fragmentShader.getShader());
         fragmentShader.release();
 
+        gl.linkProgram(program);
+
+        const success = gl.getProgramParameter(program, gl.LINK_STATUS);
+
+        if (!success) {
+            gl.deleteProgram(program);
+            throw new Error(`Failed to link program: ${gl.getProgramInfoLog(program)}`);
+        }
+
+        gl.useProgram(program); // retrieve and store program variable information
+        this.bufferFormat = new BufferFormat(this.context, {shaderSpec: config.shaders.vertex.spec});
     }
 
     public use() {
