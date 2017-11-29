@@ -98,8 +98,9 @@ export class Shader extends WebGLResource implements IShader {
         gl.compileShader(this.shader); // compile the shader program
 
         if (!gl.getShaderParameter(this.shader, gl.COMPILE_STATUS)) {
+            const info = gl.getShaderInfoLog(this.shader);
             gl.deleteShader(this.shader);
-            throw new Error(`Failed to compile ${this.id}: ${gl.getShaderInfoLog(this.shader)}`);
+            throw new Error(`Failed to compile ${this.id}: ${info}`);
         }
     }
 
