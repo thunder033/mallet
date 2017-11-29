@@ -6,7 +6,7 @@
   "browser": "./test/app/test.module.js",
   "scripts": {
     "fastBuild": "tsc -p ./ && browserify -d -s mallet --noparse=angular src/mallet/index.js -o dist/index.js",
-    "build": "tslint \"src/**/*.ts\" \"test/**/*.ts\" && tsc -p ./ && tsc -p ./test && dts-generator --project src --out dist/typingsx.d.ts",
+    "build": "tslint \"src/**/*.ts\" \"test/**/*.ts\" && npm run fastBuild && tsc -p ./test && dts-generator --project src --out dist/typingsx.d.ts",
     "pretest": "npm run build",
     "test": "./node_modules/.bin/mocha --reporter spec test/**/*.js",
     "preversion": "npm test",
