@@ -56,6 +56,13 @@ export class BufferFormat extends WebGLResource implements IBufferFormat {
             // or force the shader to use a given position with bindAttribLocation
             const index = gl.getAttribLocation(program, attrib.name);
 
+            if (index < 0) {
+                this.context.logger.debug(`Skipping layout of ${attrib.name}, unused in shader program`);
+                // increase the offset for the next attrib
+                offset += byteSizes[attrib.type] * attrib.size;
+                return;
+            }
+
             // describe the attribute in the buffer
             layoutOps.push(gl.vertexAttribPointer.bind(gl,
                 index,
@@ -75,6 +82,7 @@ export class BufferFormat extends WebGLResource implements IBufferFormat {
             offset += byteSizes[attrib.type] * attrib.size;
         });
 
-        return (() => layoutOps.forEach(Function.call));
+        this.context.logger.debug(`Created buffer layout function`, layoutOps);
+        return (() => layoutOps.forEach((f) => f()));
     }
 }

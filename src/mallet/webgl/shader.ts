@@ -94,10 +94,11 @@ export class Shader extends WebGLResource implements IShader {
         }
 
         this.shader = gl.createShader(gl[options.type]);
-        gl.shaderSource(this.shader, shaderSource);
-        gl.compileShader(this.shader);
+        gl.shaderSource(this.shader, shaderSource); // send the source to the shader object
+        gl.compileShader(this.shader); // compile the shader program
 
         if (!gl.getShaderParameter(this.shader, gl.COMPILE_STATUS)) {
+            gl.deleteShader(this.shader);
             throw new Error(`Failed to compile ${this.id}: ${gl.getShaderInfoLog(this.shader)}`);
         }
     }
@@ -112,5 +113,9 @@ export class Shader extends WebGLResource implements IShader {
 
     public prepare({gl}: IWebGLStageContext): void {
         // no-op
+    }
+
+    public release(): void {
+        this.context.gl.deleteShader(this.shader);
     }
 }
