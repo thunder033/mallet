@@ -52,7 +52,7 @@ export enum GLUniformType {
 export type GLMatrixSetter = (transpose: boolean, matrix: Float32Array | number[]) => void;
 
 export interface IUniformDescription {
-    [name: string]: GLUniformType;
+    [name: string]: GLUniformType | IUniformDescription;
 }
 
 export interface IShaderOptions {

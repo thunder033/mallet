@@ -11,7 +11,7 @@ export interface IProgramOptions {
 export interface IShaderProgram extends IWebGLResource {
     getGLProgram(): WebGLProgram;
     use(): void;
-    getUniformSetter(name: string): (data: any) => void;
+    getUniformSetter(name: string): (...data) => void;
 }
 
 interface IUniform {
@@ -83,15 +83,41 @@ export class ShaderProgram extends WebGLResource implements IShaderProgram {
     private cacheUniforms(spec: IUniformDescription[]) {
         const {program, gl} = this.context;
         spec.forEach((uniforms) => {
-            Object.keys(uniforms).forEach((name) => {
+            this.flattenUniforms(uniforms).forEach((namePcs) => {
+                const name = namePcs.join('.');
                 const location = gl.getUniformLocation(program, name);
-                this.context.logger.debug(`Caching uniform ${name} (${uniforms[name]}) at location ${location}`);
-                this.uniforms[name] = {
-                    name,
-                    location,
-                    type: uniforms[name],
-                };
+                const type = this.getUniformType(uniforms, namePcs);
+                this.context.logger.debug(`Caching uniform ${name} (${type}) at location ${location}`);
+                this.uniforms[name] = {name, location, type};
             });
         });
+    }
+
+    private flattenUniforms(struct: IUniformDescription, keys: string[][] = [], pieces: string[] = []): string[][] {
+        if (!struct) {
+            return;
+        }
+
+        if (pieces.length > 5) {
+            throw new TypeError('Uniform structs with more than 5 levels are not supported, your struct object may have cycles');
+        }
+
+        Object.keys(struct).forEach((prop) => {
+            const type = struct[prop];
+            // Type -> new key array
+            if (GLUniformType[type as GLUniformType]) {
+                keys.push([...pieces, prop]);
+            } else { // Struct -> flatten ( struct, keys, pieces + prop
+                this.flattenUniforms(type as IUniformDescription, keys, [...pieces, prop]);
+            }
+        });
+
+        return keys;
+    }
+
+    private getUniformType(uniform: IUniformDescription, name: string[]): GLUniformType {
+        return name.reduce((struct, prop) => {
+            return struct[prop];
+        }, uniform) as GLUniformType;
     }
 }
