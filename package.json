@@ -8,7 +8,7 @@
     "fastBuild": "tsc -p ./ && browserify -d -s mallet --noparse=angular src/mallet/index.js -o dist/index.js",
     "build": "tslint \"src/**/*.ts\" \"test/**/*.ts\" && npm run fastBuild && tsc -p ./test && dts-generator --project src --out dist/typingsx.d.ts",
     "pretest": "npm run build",
-    "test": "./node_modules/.bin/mocha --reporter spec test/**/*.js",
+    "test": "./node_modules/.bin/mocha --reporter spec test/spec/**/*.js",
     "preversion": "npm test",
     "version": "npm run build",
     "postversion": "git push && git push --tags",
