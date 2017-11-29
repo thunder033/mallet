@@ -27,6 +27,10 @@ function inject(identifier) {
     };
 }
 exports.inject = inject;
+// tslint:disable-next-line:no-namespace
+(function (inject) {
+    inject.provider = (identifier) => inject(`${identifier}Provider`);
+})(inject = exports.inject || (exports.inject = {}));
 function ngAnnotateProvider(constructor) {
     const provider = constructor.prototype;
     const annotations = Reflect.getOwnMetadata(annotationKey, constructor) || [];

@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class WebGLResourceFactory {
-    constructor(gl) {
-        this.gl = gl;
+    constructor(context) {
+        this.context = context;
     }
     create(ctor, options) {
-        return new ctor(this.gl, options);
+        return new ctor(this.context, options);
     }
 }
 exports.WebGLResourceFactory = WebGLResourceFactory;

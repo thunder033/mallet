@@ -1,6 +1,6 @@
-import { IWebGLResource, IWebGLResourceCtor } from './webgl-resource';
+import { IWebGLResource, IWebGLResourceCtor, IWebGLStageContext } from './webgl-resource';
 export declare class WebGLResourceFactory {
-    private gl;
-    constructor(gl: WebGLRenderingContext);
+    private context;
+    constructor(context: IWebGLStageContext);
     create<R extends IWebGLResource, O>(ctor: IWebGLResourceCtor<R, O>, options: O): R;
 }

@@ -13,6 +13,9 @@ export interface InjectableMethod {
  * @returns {ParameterDecorator}
  */
 export declare function inject(identifier: string): ParameterDecorator;
+export declare namespace inject {
+    const provider: (identifier: string) => ParameterDecorator;
+}
 export declare function ngAnnotateProvider(constructor: {
     new (...args): IServiceProvider;
 }): void;

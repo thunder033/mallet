@@ -177,6 +177,7 @@ let Scheduler = class Scheduler {
         this.elapsedTime = frameTime - this.startTime;
         this.updateFPS(this.elapsedTime);
         let updateSteps = 0;
+        const frameDeltaTime = this.deltaTime;
         while (this.deltaTime > this.timestep) {
             this.doUpdate(this.timestep, this.elapsedTime);
             this.deltaTime -= this.timestep;
@@ -187,7 +188,7 @@ let Scheduler = class Scheduler {
                 break;
             }
         }
-        this.doDraw(this.deltaTime, this.elapsedTime);
+        this.doDraw(frameDeltaTime, this.elapsedTime);
         this.animationFrame = requestAnimationFrame(this.mainLoop);
     }
 };

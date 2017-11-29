@@ -1,20 +1,25 @@
 
 import {RenderTargetWebGL} from '../render-target.factory';
-import {IShader, IShaderOptions, Shader, ShaderType} from './shader';
 import {WebGLResourceFactory} from './webgl-resource-factory';
 import {inject} from '../lib/injector-plus';
 import {MDT} from '../mallet.depedency-tree';
 import {Logger} from '../lib/logger';
 import bind from 'bind-decorator';
-import {VertexShader2D} from './vertex-shader';
-import {IPromise, IQService} from 'angular';
-import {IShaderSource} from './shader-source.provider';
+import {IQService} from 'angular';
 import {IWebGLStageContext} from './webgl-resource';
-import {IShaderProgram, ShaderProgram} from './shader-program';
+import {IProgramOptions, IShaderProgram, ShaderProgram} from './shader-program';
+import {IWebGLMesh, WebGLMesh} from './webgl-mesh';
+import {ICamera} from '../geometry/camera';
+import {GLMatrixSetter} from './shader';
+import {mat4} from 'gl-matrix';
 
 export interface IWebGLStage {
-    set(renderTarget: RenderTargetWebGL): void;
-    present(dt: number): void;
+    set(renderTarget: RenderTargetWebGL, programOptions: IProgramOptions): void;
+    clear(dt: number): void;
+    getFactory(): WebGLResourceFactory;
+
+    render(mesh: IWebGLMesh): void;
+    setActiveCamera(camera: ICamera): void;
 }
 
 export class WebGLStage implements IWebGLStage {
@@ -24,95 +29,114 @@ export class WebGLStage implements IWebGLStage {
     private program: IShaderProgram;
     private context: IWebGLStageContext;
 
-    private verts1 = new Float32Array([-1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0]);
-    private verts2 = new Float32Array([-0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5]);
+    private setViewMatrix: GLMatrixSetter;
+    private setWorldMatrix: GLMatrixSetter;
+    private setProjectionMatrix: GLMatrixSetter;
+    private identity = mat4.create();
+    private activeCamera: ICamera;
 
-    private readonly shaderConfig: IShaderOptions[] = [
-        {id: '2d-vertex-shader', type: ShaderType.VERTEX_SHADER},
-        {id: 'fragment-shader', type: ShaderType.FRAGMENT_SHADER}];
-
-    private shaders: IShader[];
+    private cubeZ: number;
+    private cubeDelta: number;
+    private cubeRot: number;
 
     constructor(
         @inject(MDT.ng.$q) private $q: IQService,
-        @inject(MDT.webgl.ShaderSource) private shaderSource: IShaderSource,
         @inject(MDT.Logger) private logger: Logger) {
-        this.shaders = [];
+        this.cubeZ = -1;
+        this.cubeDelta = 1 / 500;
+        this.cubeRot = 0;
     }
 
     @bind
-    public set(renderTarget: RenderTargetWebGL): IPromise<boolean> {
+    public set(renderTarget: RenderTargetWebGL, programConfig: IProgramOptions): boolean {
+        this.logger.debug(`Setting WebGL Stage`);
         this.renderTarget = renderTarget;
         this.gl = renderTarget.getContext();
         this.context = {gl: this.gl, program: null, logger: this.logger};
-        this.program = new ShaderProgram(this.context, {shaders: });
-        this.context.program = this.program.getGLProgram();
 
-        this.logger.info(this.shaderSource);
+        try {
+            this.program = new ShaderProgram(this.context, programConfig);
+            this.context.program = this.program.getGLProgram();
 
-        this.glFactory = new WebGLResourceFactory(this.context);
+            const {gl} = this.context;
+            gl.enable(gl.DEPTH_TEST); // could replace this with blending: http://learningwebgl.com/blog/?p=859
 
-        const gl = this.gl;
-        const program = this.program;
+            this.setViewMatrix = this.program.getUniformSetter('view');
+            this.setWorldMatrix = this.program.getUniformSetter('world');
+            this.setProjectionMatrix = this.program.getUniformSetter('projection');
 
-        return this.loadShaders(this.shaderConfig).then((shaders) => {
-            this.shaders = shaders;
-            this.shaders.forEach((shader: IShader) => {
-                gl.attachShader(program, shader.getShader());
-            });
+            // TODO: create materials
 
-            gl.linkProgram(program);
+            this.glFactory = new WebGLResourceFactory(this.context);
+            this.logger.debug(`WebGL Stage set`);
+            return true;
+        } catch (e) {
+            this.logger.error(e.message || e);
+            return false;
+        }
+    }
 
-            const success = gl.getProgramParameter(program, gl.LINK_STATUS);
+    public getFactory(): WebGLResourceFactory {
+        return this.glFactory;
+    }
 
-            if (success) {
-                gl.useProgram(program);
+    public setActiveCamera(camera: ICamera): void {
+        this.activeCamera = camera;
 
-                this.shaders.forEach((s) => s.prepare(this.context));
-            } else {
-                this.logger.error(gl.getProgramInfoLog(program));
-                gl.deleteProgram(program);
-            }
+        // this will have to move to do zooming or similar
+        this.setProjectionMatrix(false, camera.getProjectionMatrix());
+    }
 
-            return success;
-        });
+    public render(mesh: WebGLMesh) { // TODO: maybe more this to renderer
+        if (!this.gl || !this.context.program) {
+            this.logger.debug(`WebGL context or program not present. Skipping frame render`);
+            return;
+        }
+
+        const {gl} = this.context;
+        // https://stackoverflow.com/questions/6077002/using-webgl-index-buffers-for-drawing-meshes
+        // get the vertex buffer from the mesh & send the vertex buffer to the GPU
+        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.getVertexBuffer());
+
+        // use program & enable attributes
+        this.program.use();
+
+        // send index buffer to the GPU
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.getIndexBuffer());
+
+        const cubeTransform = mat4.create();
+        mat4.translate(cubeTransform, this.identity, [.25, -.15, this.cubeZ]);
+        mat4.rotateX(cubeTransform, cubeTransform, this.cubeRot);
+        mat4.rotateY(cubeTransform, cubeTransform, this.cubeRot);
+        mat4.rotateZ(cubeTransform, cubeTransform, this.cubeRot);
+        this.setWorldMatrix(false, cubeTransform);
+
+        // perform the draw call
+        gl.drawElements(gl.TRIANGLES, mesh.getVertexCount(), gl.UNSIGNED_SHORT, 0);
     }
 
     @bind
-    protected loadShaders(configs: IShaderOptions[]): IPromise<IShader[]> {
-        return this.resolveShaderSources(configs).then((fullConfigs) => {
-            return fullConfigs.map(this.createShader);
-        });
-    }
+    public clear(dt: number) {
+        if (!this.gl || !this.context.program) {
+            this.logger.debug(`WebGL context or program not present. Skipping frame render`);
+            return;
+        }
 
-    @bind
-    protected resolveShaderSources(configs: IShaderOptions[]): IPromise<IShaderOptions[]> {
-        const mixedOps = configs.map((config) => {
-            if (!config.src) {
-                return this.shaderSource.load(config.id).then((source) => {
-                    config.src = source;
-                    return config;
-                });
-            }
-
-            return config;
-        });
-
-        return this.$q.all(mixedOps) as IPromise<IShaderOptions[]>;
-    }
-
-    @bind
-    protected createShader(config: IShaderOptions): IShader {
-        const type = config.type === ShaderType.VERTEX_SHADER ? VertexShader2D : Shader;
-        return this.glFactory.create(type, config);
-    }
-
-    @bind
-    public present(dt: number) {
-        const gl = this.gl;
+        const {gl} = this.context;
+        gl.clearColor(0.33, 0.33, 0.33, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
-        gl.bufferData(gl.ARRAY_BUFFER, this.verts2, gl.STATIC_DRAW);
-        gl.drawArrays(gl.TRIANGLES, 0, this.verts2.length / 2);
+        // kind of out of scope, but clear is first draw operation, so works for now
+        this.setViewMatrix(false, this.activeCamera.getViewMatrix());
+
+        this.cubeZ += dt * this.cubeDelta;
+        this.cubeRot += dt * this.cubeDelta;
+
+        const min = -10;
+        const max = -0.1 - 0.5;
+        if (this.cubeZ < min || this.cubeZ > max) {
+            this.cubeZ = Math.min(min, Math.max(this.cubeZ, max));
+            this.cubeDelta *= -1;
+        }
     }
 }

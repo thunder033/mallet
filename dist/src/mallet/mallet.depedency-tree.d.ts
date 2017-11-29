@@ -43,6 +43,7 @@ declare const MDT: {
     StateMachine: string;
     Thread: string;
     RenderTarget: string;
+    Library: string;
     webgl: {
         ShaderSource: string;
         WebGLStage: string;

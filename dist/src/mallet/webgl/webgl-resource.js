@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+function bindGLContext() {
+}
 class WebGLResource {
-    release() {
-        // no-op
+    constructor(context) {
+        this.context = context;
     }
 }
 exports.WebGLResource = WebGLResource;
