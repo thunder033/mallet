@@ -1,6 +1,6 @@
 {
   "name": "mallet",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Real-time Angular rendering engine written in TypeScript, based on WebGL & Canvas",
   "main": "dist/mallet.js",
   "browser": "./test/app/test.module.js",
