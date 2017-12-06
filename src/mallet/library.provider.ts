@@ -3,12 +3,15 @@ import bind from 'bind-decorator';
 import {IHttpResponse, IServiceProvider} from 'angular';
 import angular = require('angular');
 
-export interface ILibrary<T> {
+export interface ILibrary<T, P> {
     get(id: string | number): Promise<T>;
+    addSources(sources: Array<ISource<P>>): void;
+    getAllItems(): Promise<T[]>;
 }
 
 export interface ISource<T> {
     get(id: string | number): Promise<T | string>;
+    getAll(): Promise<Array<T | string>>;
     getOrder(): number;
 }
 
@@ -36,6 +39,10 @@ export class StaticSource<T> implements ISource<T> {
 
     public get(id: string | number): Promise<string | T> {
         return Promise.resolve(this.entries[id]);
+    }
+
+    public getAll(): Promise<Array<string | T>> {
+        return Promise.resolve(Object.keys(this.entries).map((key) => this.entries[key]));
     }
 
     public getOrder(): number {
@@ -86,6 +93,12 @@ export class SourceAdapter<T> implements ISource<T> {
         return this.source[this.method](this.inputTransform(id))[this.successMethod](this.outputTransform);
     }
 
+    public getAll(): Promise<Array<string | T>> {
+        console.warn('Source Adapter does not support getAll functionality');
+        // throw new Error('Source Adapter does not support getAll functionality');
+        return Promise.resolve([]);
+    }
+
     public getOrder(): number {
         return this.order;
     }
@@ -108,7 +121,7 @@ export class HttpAdapter<T> extends SourceAdapter<T> {
 /**
  * Falls back through provided sources to retrieve a DTO, building and returning an entity
  */
-class Library<T, P> implements ILibrary<T> {
+class Library<T, P> implements ILibrary<T, P> {
     private sourceIndex: number;
     private id: string | number;
     private returnDTO: boolean;
@@ -119,6 +132,10 @@ class Library<T, P> implements ILibrary<T> {
         this.returnDTO = !this.ctor; // return DTO instead of constructing an entity
     }
 
+    public addSources(sources: Array<ISource<P>>): void {
+        Array.prototype.push(this.sources, sources);
+    }
+
     public get(id: string): Promise<T> {
         const result = null;
         this.sources.sort((a, b) => a.getOrder() - b.getOrder());
@@ -126,6 +143,17 @@ class Library<T, P> implements ILibrary<T> {
         this.sourceIndex = 0;
         this.id = id;
         return this.fallbackGet(null).then(this.processResult);
+    }
+
+    /**
+     * Retrieve all items from each source, and aggregate items to a single array
+     * @returns {Promise<T[]>}
+     */
+    public getAllItems(): Promise<T[]> {
+        return Promise.all(this.sources.map((source) => source.getAll()))
+            .then((results) => {
+                return Array.prototype.concat.apply([], results);
+            });
     }
 
     /**
@@ -155,7 +183,7 @@ class Library<T, P> implements ILibrary<T> {
      * @param {Object | string} result
      * @returns {T}
      */
-    @bind private processResult(result: object | string): T {
+    @bind protected processResult(result: object | string): T {
         if (result === null || result === '') {
             return null;
         } else if (typeof result === 'string') {
@@ -166,28 +194,60 @@ class Library<T, P> implements ILibrary<T> {
     }
 }
 
+/**
+ * Library with dynamically built entries that are prepared during application setup
+ */
+class PreparedLibrary<T> extends Library<T, void> {
+    constructor(ctor: {new (...args): T}, sources: Array<ISource<void>>) {
+        super(ctor, sources);
+    }
+
+    protected processResult(result: Object | string): T {
+        return result as T;
+    }
+}
+
 export interface IEntityCtor<T, P> {
     new(params: P): T;
 }
 
 export interface ILibraryService {
-    get<T, P>(type: IEntityCtor<T, P>, id: string | number): Promise<T>;
+    get<T, P>(type: IEntityCtor<T, P> | {new (...args): T}, id: string | number): Promise<T>;
+    getAll<T, P>(type: IEntityCtor<T, P> | {new (...args): T}): Promise<T[]>;
+    addSources<T, P>(ctor: {new (...args): T}, sources: Array<ISource<P>>): void;
 }
 
 export class LibraryProvider implements IServiceProvider {
-    private libaries: Map<Function, ILibrary<any>>;
+    private libaries: Map<Function, ILibrary<any, any>>;
 
     constructor() {
         this.libaries = new Map();
     }
 
     /**
-     * Add a new library for the type with provided sources
+     * Add source entries for the given type
      * @param {IEntityCtor<T, P>} ctor
      * @param {Array<ISource<T>>} sources
      */
-    public addLibrary<T, P>(ctor: IEntityCtor<T, P>, sources: Array<ISource<P>>) {
-        this.libaries.set(ctor, new Library(ctor, sources));
+    public addSources<T, P>(ctor: IEntityCtor<T, P>, sources: Array<ISource<P>>) {
+        if (this.libaries.has(ctor)) {
+            this.libaries.get(ctor).addSources(sources);
+        } else {
+            this.libaries.set(ctor, new Library(ctor, sources));
+        }
+    }
+
+    /**
+     * Add a library with sources configured after application setup
+     * @param {any} ctor
+     * @param {Array<ISource<any>>} sources
+     */
+    public addPreparedSources<T>(ctor: {new (...args): T}, sources: Array<ISource<any>>) {
+        if (this.libaries.has(ctor)) {
+            this.libaries.get(ctor).addSources(sources);
+        } else {
+            this.libaries.set(ctor, new PreparedLibrary(ctor, sources));
+        }
     }
 
     /**
@@ -198,14 +258,22 @@ export class LibraryProvider implements IServiceProvider {
      */
     @bind public get<T>(type: Function, id: string | number): Promise<T> {
         if (!this.libaries.has(type)) {
-            throw new ReferenceError(`No Library is configured for ${type.name}`);
+            throw new ReferenceError(`No sources are configured for ${type.name}`);
         }
 
         return this.libaries.get(type).get(id);
     }
 
+    @bind public getAll<T>(type: Function): Promise<T[]> {
+        if (!this.libaries.has(type)) {
+            throw new ReferenceError(`No sources are configured for ${type.name}`);
+        }
+
+        return this.libaries.get(type).getAllItems();
+    }
+
     @bind
     public $get(): ILibraryService {
-        return {get: this.get};
+        return {get: this.get, getAll: this.getAll, addSources: this.addPreparedSources};
     }
 }
