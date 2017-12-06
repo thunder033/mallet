@@ -34,6 +34,11 @@ node_modules
 src/**/*.js
 src/**/*.js.map
 
+build/**/*.js
+build/**/*.js.map
+
+dist/mallet-typings.d.ts
+
 test/**/*.js
 test/**/*.js.map
 .tmp
