@@ -14,7 +14,6 @@ import {Camera, ICamera} from '../geometry/camera';
 import {mat4} from 'gl-matrix';
 import {IRenderer, Renderer} from './renderer';
 
-
 class WebGLStageCtrl implements IController {
     private type: IRenderTargetCtor = RenderTargetWebGL;
     private gl: WebGLRenderingContext;

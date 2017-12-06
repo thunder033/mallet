@@ -157,6 +157,21 @@ class Library<T, P> implements ILibrary<T, P> {
     }
 
     /**
+     * Transform the DTO or string into an entity
+     * @param {Object | string} result
+     * @returns {T}
+     */
+    @bind protected processResult(result: object | string): T {
+        if (result === null || result === '') {
+            return null;
+        } else if (typeof result === 'string') {
+            result = JSON.parse(result);
+        }
+
+        return this.returnDTO ? result as T : new this.ctor(result as P);
+    }
+
+    /**
      * Recurse through each source, only calling a source if the previous return no result or failed
      * @param result
      * @returns {Promise<string | T>}
@@ -176,21 +191,6 @@ class Library<T, P> implements ILibrary<T, P> {
         }
 
         return result;
-    }
-
-    /**
-     * Transform the DTO or string into an entity
-     * @param {Object | string} result
-     * @returns {T}
-     */
-    @bind protected processResult(result: object | string): T {
-        if (result === null || result === '') {
-            return null;
-        } else if (typeof result === 'string') {
-            result = JSON.parse(result);
-        }
-
-        return this.returnDTO ? result as T : new this.ctor(result as P);
     }
 }
 
