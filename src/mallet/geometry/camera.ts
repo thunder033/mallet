@@ -1,5 +1,6 @@
 import {mat4, quat, vec3} from 'gl-matrix';
 import {ITransform, Transform} from './transform';
+import bind from 'bind-decorator';
 
 export interface ICamera {
     /**
@@ -93,21 +94,21 @@ export class Camera implements ICamera {
 
     public getForward(): vec3 {
         if (this.stale === true) {
-            vec3.transformQuat(this.forward, this.forward, this.transform.getRotation());
+            vec3.transformQuat(this.forward, this.forward, this.transform.getRotation() as quat);
             this.stale = false;
         }
 
         return this.forward;
     }
 
-    public update(dt: number, tt: number): void {
+    @bind public update(dt: number, tt: number): void {
         this.updateViewMatrix();
     }
 
     public updateViewMatrix(): void {
         const position: vec3 = vec3.create();
-        vec3.add(position, this.transform.getPosition(), this.getForward());
-        mat4.lookAt(this.viewMatrix, this.transform.getPosition(), position, this.up);
+        vec3.add(position, this.transform.getPosition() as vec3, this.getForward());
+        mat4.lookAt(this.viewMatrix, this.transform.getPosition() as vec3, position, this.up);
     }
 
     public setAspectRatio(aspectRatio: number) {
@@ -123,7 +124,7 @@ export class Camera implements ICamera {
 
     public advance(distance: number): void {
         this.stale = true;
-        const position = vec3.clone(this.transform.getPosition());
+        const position = vec3.clone(this.transform.getPosition() as vec3);
         vec3.scale(this.disp, this.getForward(), distance);
         vec3.add(position, position, this.disp);
         this.transform.setPosition.apply(this.transform, position);
@@ -131,7 +132,7 @@ export class Camera implements ICamera {
 
     public strafe(distance: number): void {
         this.stale = true;
-        const position = vec3.clone(this.transform.getPosition());
+        const position = vec3.clone(this.transform.getPosition() as vec3);
         vec3.cross(this.disp, this.getForward(), [0, 1, 0]);
         vec3.scale(this.disp, this.disp, distance);
         vec3.add(position, position, this.disp);
@@ -140,7 +141,7 @@ export class Camera implements ICamera {
 
     public ascend(distance: number): void {
         this.stale = true;
-        const position = vec3.clone(this.transform.getPosition());
+        const position = vec3.clone(this.transform.getPosition() as vec3);
         vec3.scale(this.disp, this.up, distance);
         vec3.add(position, position, this.disp);
         this.transform.setPosition.apply(this.transform, position);

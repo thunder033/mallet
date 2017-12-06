@@ -9,17 +9,18 @@ export interface ITransform {
     vTimeTranslate(velocity: glMatrix.vec3, deltaTime: number): ITransform;
 
     setPosition(x: number, y: number, z: number): ITransform;
-    getPosition(): glMatrix.vec3;
+    getPosition(): Readonly<glMatrix.vec3>;
     translate(x: number, y: number, z: number): ITransform;
     vTranslate(delta: glMatrix.vec3): ITransform;
 
     setScale(x: number, y: number, z: number): ITransform;
-    getScale(): glMatrix.vec3;
+    getScale(): Readonly<glMatrix.vec3>;
     scaleBy(x: number, y: number, z: number): ITransform;
     vScaleBy(delta: glMatrix.vec3): ITransform;
 
-    setRotation(x: number, y: number, z: number): ITransform;
-    getRotation(): glMatrix.quat;
+    vSetRotation(orientation: glMatrix.quat | glMatrix.vec3): ITransform;
+    setRotation(yaw: number, pitch: number, roll: number): ITransform;
+    getRotation(): Readonly<glMatrix.quat>;
     rotateBy(x: number, y: number, z: number): ITransform;
     vRotateBy(delta: glMatrix.vec3): ITransform;
 
@@ -171,8 +172,13 @@ export class Transform implements ITransform {
         return this;
     }
 
-    public vSetRotation(rotation: glMatrix.vec3): ITransform {
-        quat.fromEuler(this.rotation, rotation[0], rotation[1], rotation[2]);
+    public vSetRotation(orientation: glMatrix.vec3 | glMatrix.quat): ITransform {
+        if (orientation.length === 3) {
+            quat.fromEuler(this.rotation, orientation[0], orientation[1], orientation[2]);
+        } else {
+            quat.set(this.rotation, orientation[0], orientation[1], orientation[2], orientation[3]);
+        }
+
         this.isDirty = true;
         return this;
     }
