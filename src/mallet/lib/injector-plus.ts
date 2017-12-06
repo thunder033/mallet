@@ -3,6 +3,7 @@ import {Level, Logger} from './logger';
 import {IController, IServiceProvider} from 'angular';
 
 const logger = new Logger();
+logger.config({level: Level.Verbose});
 
 export interface InjectableMethodCtor {
     new(): InjectableMethod;
@@ -61,10 +62,26 @@ export function ngAnnotateProvider(constructor: {new(...args): IServiceProvider}
 /**
  * Construct an angular annotation array from dependency metadata
  * @param {Function} provider
+ * @param {Function} baseClass
  * @returns {Array<string | Function>}
  */
-export function ngAnnotate(provider: Function | InjectableMethodCtor): Array<string | Function> {
-    const annotations: string[] = Reflect.getOwnMetadata(annotationKey, provider) || [];
+export function ngAnnotate(provider: Function | InjectableMethodCtor, baseClass: Function = null): Array<string | Function> {
+    let clazz = baseClass || provider;
+    let annotations: string[] = Reflect.getMetadata(annotationKey, clazz) || [];
+
+    // if we didn't find any annotations on the class, look in it's prototype chain
+    if (annotations.length === 0) {
+        do {
+            clazz = Object.getPrototypeOf(clazz);
+            annotations = Reflect.getMetadata(annotationKey, clazz) || [];
+            logger.verbose(`Checking ${clazz.name} for annotations. Found ${annotations.length}`);
+        } while (annotations.length === 0 && clazz.name !== '');
+
+        // reset the class reference to the provider if we didn't find any annotations
+        if (clazz.name === '') {
+            clazz = provider;
+        }
+    }
 
     let method = provider;
     let methodName = provider.name;
@@ -74,7 +91,8 @@ export function ngAnnotate(provider: Function | InjectableMethodCtor): Array<str
         methodName += `.${injectableMethodName}`;
     }
 
-    if (annotations.length !== method.length) {
+    // the number annotations should match either the method length or the base class ctor length
+    if (annotations.length !== method.length && clazz.length !== annotations.length) {
         throw new Error(
             `Annotations are not defined for all dependencies of ${methodName}: 
             expected ${method.length} annotations and found ${annotations.length}`);

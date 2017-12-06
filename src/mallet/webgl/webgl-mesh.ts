@@ -1,6 +1,6 @@
 
 import {Mesh} from '../geometry/mesh';
-import {IWebGLResource, IWebGLStageContext, WebGLResource} from './webgl-resource';
+import {IWebGLResource, IWebGLResourceContext, WebGLResource} from './webgl-resource';
 
 export interface IWebGLMesh extends IWebGLResource {
     getIndexBuffer(): WebGLBuffer;
@@ -9,7 +9,7 @@ export interface IWebGLMesh extends IWebGLResource {
     getVertexSize(): number;
 }
 
-export interface IMeshOptions {
+export interface IWebGLMeshOptions {
     mesh: Mesh;
 }
 
@@ -20,7 +20,7 @@ export class WebGLMesh extends WebGLResource implements IWebGLMesh {
     private vertexCount: number;
     private vertexSize: number;
 
-    constructor(context: IWebGLStageContext, options: IMeshOptions) {
+    constructor(context: IWebGLResourceContext, options: IWebGLMeshOptions) {
         super(context);
         const {gl} = context;
 

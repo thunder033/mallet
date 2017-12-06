@@ -1,8 +1,8 @@
-import {IWebGLResource, IWebGLStageContext, WebGLResource} from './webgl-resource';
+import {IWebGLResource, IWebGLResourceContext, WebGLResource} from './webgl-resource';
 import {DTO} from '../library.provider';
 
 export interface IShader extends IWebGLResource {
-    prepare(context: IWebGLStageContext): void;
+    prepare(context: IWebGLResourceContext): void;
     getId(): string;
     getShader(): WebGLShader;
 }
@@ -49,7 +49,11 @@ export enum GLUniformType {
     uniform4iv = 'uniform4iv',
 }
 
-export type GLMatrixSetter = (transpose: boolean, matrix: Float32Array | number[]) => void;
+// webGL does not support matrix transpose, but keeps argument for consistent API
+export type GLMatrixSetter = (transpose: false, matrix: Float32Array | number[]) => void;
+export type GLVec4Setter = (x: number, y: number, z: number, w: number) => void;
+export type GLVec3Setter = (x: number, y: number, z: number) => void;
+export type GLVec2Setter = (x: number, y: number) => void;
 
 export interface IUniformDescription {
     [name: string]: GLUniformType | IUniformDescription;
@@ -83,7 +87,7 @@ export class Shader extends WebGLResource implements IShader {
     protected id: string;
     protected shader: WebGLShader;
 
-    constructor(context: IWebGLStageContext, protected options: IShaderOptions) {
+    constructor(context: IWebGLResourceContext, protected options: IShaderOptions) {
         super(context);
         const {gl} = context;
         this.id = options.id;
@@ -112,7 +116,7 @@ export class Shader extends WebGLResource implements IShader {
         return this.id;
     }
 
-    public prepare({gl}: IWebGLStageContext): void {
+    public prepare({gl}: IWebGLResourceContext): void {
         // no-op
     }
 

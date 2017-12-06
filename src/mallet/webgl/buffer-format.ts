@@ -1,4 +1,4 @@
-import {IWebGLStageContext, WebGLResource} from './webgl-resource';
+import {IWebGLResourceContext, WebGLResource} from './webgl-resource';
 import {GLDataType, IAttribDescription, IShaderSpec} from './shader';
 
 const byteSizes = {
@@ -21,7 +21,7 @@ export interface IBufferFormat {
 export class BufferFormat extends WebGLResource implements IBufferFormat {
     public apply: () => void;
 
-    constructor(protected context: IWebGLStageContext, options: IBufferFormatOptions) {
+    constructor(protected context: IWebGLResourceContext, options: IBufferFormatOptions) {
         super(context);
         this.apply = this.createLayoutDescription(options.shaderSpec.attributes);
     }

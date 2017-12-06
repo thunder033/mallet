@@ -1,17 +1,24 @@
 
 import {GLUniformType, IShader, IShaderOptions, IUniformDescription, Shader} from './shader';
 import bind from 'bind-decorator';
-import {IWebGLResource, IWebGLStageContext, WebGLResource} from './webgl-resource';
+import {IWebGLResource, IWebGLResourceContext, WebGLResource} from './webgl-resource';
 import {BufferFormat, IBufferFormat} from './buffer-format';
+import {DTO} from '../library.provider';
 
 export interface IProgramOptions {
     shaders: {vertex: IShaderOptions, fragment: IShaderOptions};
+    name: string;
 }
 
 export interface IShaderProgram extends IWebGLResource {
     getGLProgram(): WebGLProgram;
     use(): void;
     getUniformSetter(name: string): (...data) => void;
+}
+
+export class ProgramOptionsDTO extends DTO<IProgramOptions> implements IProgramOptions {
+    public shaders: {vertex: IShaderOptions, fragment: IShaderOptions};
+    public name: string;
 }
 
 interface IUniform {
@@ -23,8 +30,9 @@ interface IUniform {
 export class ShaderProgram extends WebGLResource implements IShaderProgram {
     private bufferFormat: IBufferFormat;
     private uniforms: {[name: string]: IUniform};
+    private isActive: boolean;
 
-    constructor(protected context: IWebGLStageContext, config: IProgramOptions) {
+    constructor(protected context: IWebGLResourceContext, config: IProgramOptions) {
         super(context);
         this.context.program = context.gl.createProgram();
         const {gl, program, logger} = this.context;

@@ -143,7 +143,7 @@ const meshes: {[id: string]: IMeshOptions} = {cube: {
 
 export class WebGLLibraryConfig {
     constructor(@inject.provider(MDT.Library) libraryProvider: LibraryProvider) {
-        libraryProvider.addLibrary(ShaderDTO, [new StaticSource(shaderConfig)]);
-        libraryProvider.addLibrary(Mesh, [new StaticSource(meshes)]);
+        libraryProvider.addSources(ShaderDTO, [new StaticSource(shaderConfig)]);
+        libraryProvider.addSources(Mesh, [new StaticSource(meshes)]);
     }
 }

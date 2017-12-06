@@ -8,6 +8,7 @@ export * from './render-target.component';
 export * from './scheduler.service';
 
 // geometry
+export * from './geometry/entity';
 export * from './geometry/transform';
 export * from './geometry/mesh';
 export * from './geometry/camera';
@@ -17,3 +18,7 @@ export * from './geometry/camera';
 // webgl
 export * from './webgl/webgl.module';
 export * from './webgl/webgl-stage';
+export * from './webgl/renderer';
+export * from './webgl/webgl-app';
+export * from './webgl/webgl-mesh';
+export * from './webgl/shader';
