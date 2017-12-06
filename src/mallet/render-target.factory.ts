@@ -19,6 +19,7 @@ export interface IRenderTarget {
     getCanvas(): HTMLCanvasElement;
     resize(scale?: number);
     clear();
+    getAspectRatio(): number;
 }
 
 export interface IRenderTargetOptions {
@@ -36,6 +37,10 @@ export abstract class RenderTarget implements IRenderTarget {
         this.canvas.width = width;
         this.canvas.height = height;
         this.ctx = this.getNewContext();
+    }
+    
+    public getAspectRatio(): number {
+        return this.canvas.clientWidth / this.canvas.clientHeight;
     }
 
     public abstract clear();

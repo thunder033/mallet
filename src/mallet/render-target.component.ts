@@ -93,7 +93,7 @@ export class RenderTargetCtrl implements IController {
 
     @bind
     private onResize() {
-        this.renderTarget.resize();
+        this.renderTarget.resize(this.scale);
     }
 }
 
