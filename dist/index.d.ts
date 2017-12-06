@@ -283,9 +283,6 @@ declare const MDT: {
 	}
 
 	export type ICommand = (deltaTime: number, totalTime: number) => void;
-	export interface IUpdateable {
-	    update: ICommand;
-	}
 	/**
 	 * Executes and monitors the engine loop
 	 */
@@ -341,6 +338,12 @@ declare const MDT: {
 	     */
 	    draw(operation: ICommand, zIndex: number): void;
 	    /**
+	     * Queue a post process operation to be executed one and discarded
+	     * @param operation
+	     * @param zIndex
+	     */
+	    postProcess(operation: ICommand, zIndex: number): void;
+	    /**
 	     * Clears the set of registered doUpdate operations
 	     */
 	    reset(): void;
@@ -351,16 +354,16 @@ declare const MDT: {
 	    setSuspendOnBlur(flag: boolean): void;
 	    /**
 	     * Execute all doUpdate opeartions while preserving the doUpdate queue
-	     * @param stepDeltaTime (in milliseconds)
-	     * @param totalElapsedTime (in milliseconds)
+	     * @param stepDeltaTime
+	     * @param totalElapsedTime
 	     */
-	    protected doUpdate(stepDeltaTime: number, totalElapsedTime: number): void;
+	    private doUpdate(stepDeltaTime, totalElapsedTime);
 	    /**
 	     * Execute all draw and post-draw commands, emptying each queue
 	     * @param stepDeltaTime
 	     * @param totalElapsedTime
 	     */
-	    protected doDraw(stepDeltaTime: number, totalElapsedTime: number): void;
+	    private doDraw(stepDeltaTime, totalElapsedTime);
 	    /**
 	     * Update the FPS value
 	     * @param totalElapsedTime
@@ -1234,6 +1237,3 @@ declare const MDT: {
 	    getNext(): T;
 	    resetPointer(): void;
 	}
-
-	/// <reference types="angular" />
-	export const portfolio: angular.IModule;
