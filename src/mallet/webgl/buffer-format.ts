@@ -1,5 +1,6 @@
-import {IWebGLResourceContext, WebGLResource} from './webgl-resource';
+import {WebGLResource} from './webgl-resource';
 import {GLDataType, IAttribDescription, IShaderSpec} from './shader';
+import {IWebGLResourceContext} from './webgl-resource-context';
 
 const byteSizes = {
     [GLDataType.BYTE]: 1,
@@ -12,6 +13,7 @@ const byteSizes = {
 
 export interface IBufferFormatOptions {
     shaderSpec: IShaderSpec;
+    program: WebGLProgram;
 }
 
 export interface IBufferFormat {
@@ -20,9 +22,11 @@ export interface IBufferFormat {
 
 export class BufferFormat extends WebGLResource implements IBufferFormat {
     public apply: () => void;
+    private program: WebGLProgram;
 
-    constructor(protected context: IWebGLResourceContext, options: IBufferFormatOptions) {
-        super(context);
+    constructor(options: IBufferFormatOptions) {
+        super();
+        this.program = options.program;
         this.apply = this.createLayoutDescription(options.shaderSpec.attributes);
     }
 
@@ -42,7 +46,7 @@ export class BufferFormat extends WebGLResource implements IBufferFormat {
      * @returns {Function}
      */
     private createLayoutDescription(attribs: IAttribDescription[]): () => void {
-        const {gl, program} = this.context;
+        const {gl} = this.context;
         const vertexSize: number = attribs.reduce((total, attrib) => {
             return total + byteSizes[attrib.type] * attrib.size | 0;
         }, 0);
@@ -54,7 +58,7 @@ export class BufferFormat extends WebGLResource implements IBufferFormat {
         attribs.forEach((attrib) => {
             // get the position of the attribute in the vertex shader, we can either retrieve from the shader
             // or force the shader to use a given position with bindAttribLocation
-            const index = gl.getAttribLocation(program, attrib.name);
+            const index = gl.getAttribLocation(this.program, attrib.name);
 
             if (index < 0) {
                 this.context.logger.debug(`Skipping layout of ${attrib.name}, unused in shader program`);

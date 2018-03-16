@@ -15,6 +15,7 @@ export interface IFastTransform {
  * on a buffer that can be
  */
 export class FastTransform implements ITransform, IFastTransform {
+    public static BUFFER_LENGTH = 16;
     public static FAST_TRANSFORM_FLAG = -1;
     private buffer: Float32Array; // 13 components
 
@@ -29,14 +30,13 @@ export class FastTransform implements ITransform, IFastTransform {
     /**
      * Accepts an array buffer and position within that buffer to store data
      * @param {ArrayBuffer} buffer
-     * @param {number} offset
+     * @param {number} offset bytes fast transform is offset from the start of the buffer
      */
     constructor(buffer: ArrayBuffer, private offset: number = 0) {
-        const elementCount = 16;
-        const byteSize = elementCount * Float32Array.BYTES_PER_ELEMENT;
+        const byteSize = FastTransform.BUFFER_LENGTH * Float32Array.BYTES_PER_ELEMENT;
         // still use 16 so the memory is cross-compatible with normal transform matrix
         const arrayBuffer = buffer || new ArrayBuffer(byteSize);
-        this.buffer = new Float32Array(arrayBuffer, offset, elementCount);
+        this.buffer = new Float32Array(arrayBuffer, offset, FastTransform.BUFFER_LENGTH);
         this.buffer[15] = FastTransform.FAST_TRANSFORM_FLAG; // flag the last component to identify as fast transform
 
         const scalePos = offset;

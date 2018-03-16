@@ -1,9 +1,10 @@
 
 import {GLUniformType, IShader, IShaderOptions, IUniformDescription, Shader} from './shader';
 import bind from 'bind-decorator';
-import {IWebGLResource, IWebGLResourceContext, WebGLResource} from './webgl-resource';
+import {IWebGLResource, WebGLResource} from './webgl-resource';
 import {BufferFormat, IBufferFormat} from './buffer-format';
 import {DTO} from '../library.provider';
+import {IWebGLResourceContext} from './webgl-resource-context';
 
 export interface IProgramOptions {
     shaders: {vertex: IShaderOptions, fragment: IShaderOptions};
@@ -31,31 +32,35 @@ export class ShaderProgram extends WebGLResource implements IShaderProgram {
     private bufferFormat: IBufferFormat;
     private uniforms: {[name: string]: IUniform};
     private isActive: boolean;
+    private program: WebGLProgram;
 
-    constructor(protected context: IWebGLResourceContext, config: IProgramOptions) {
-        super(context);
-        this.context.program = context.gl.createProgram();
-        const {gl, program, logger} = this.context;
+    constructor(config: IProgramOptions) {
+        super();
+        this.program = this.context.gl.createProgram();
+        const {gl, logger} = this.context;
 
         const vertexShader: IShader = this.createShader(config.shaders.vertex);
-        gl.attachShader(program, vertexShader.getShader());
+        gl.attachShader(this.program, vertexShader.getShader());
         vertexShader.release();
 
         const fragmentShader = this.createShader(config.shaders.fragment);
-        gl.attachShader(program, fragmentShader.getShader());
+        gl.attachShader(this.program, fragmentShader.getShader());
         fragmentShader.release();
 
-        gl.linkProgram(program);
+        gl.linkProgram(this.program);
 
-        const success = gl.getProgramParameter(program, gl.LINK_STATUS);
+        const success = gl.getProgramParameter(this.program, gl.LINK_STATUS);
 
         if (!success) {
-            gl.deleteProgram(program);
-            throw new Error(`Failed to link program: ${gl.getProgramInfoLog(program)}`);
+            gl.deleteProgram(this.program);
+            throw new Error(`Failed to link program: ${gl.getProgramInfoLog(this.program)}`);
         }
 
-        gl.useProgram(program); // retrieve and store program variable information
-        this.bufferFormat = new BufferFormat(this.context, {shaderSpec: config.shaders.vertex.spec});
+        gl.useProgram(this.program); // retrieve and store program variable information
+        this.bufferFormat = this.context.factory.create(BufferFormat, {
+            program: this.program,
+            shaderSpec: config.shaders.vertex.spec});
+
         this.uniforms = {};
         this.cacheUniforms([
             config.shaders.vertex.spec.uniforms || {},
@@ -69,31 +74,30 @@ export class ShaderProgram extends WebGLResource implements IShaderProgram {
     }
 
     public use() {
-        const {gl, program} = this.context;
-        gl.useProgram(program);
+        this.context.gl.useProgram(this.program);
         this.bufferFormat.apply();
     }
 
     public getGLProgram(): WebGLProgram {
-        return this.context.program;
+        return this.program;
     }
 
     public release(): void {
-        const {gl, program} = this.context;
-        gl.deleteProgram(program);
+        const {gl} = this.context;
+        gl.deleteProgram(this.program);
     }
 
     @bind
     protected createShader(config: IShaderOptions): IShader {
-        return new Shader(this.context, config);
+        return this.context.factory.create(Shader, config);
     }
 
     private cacheUniforms(spec: IUniformDescription[]) {
-        const {program, gl} = this.context;
+        const {gl} = this.context;
         spec.forEach((uniforms) => {
             this.flattenUniforms(uniforms).forEach((namePcs) => {
                 const name = namePcs.join('.');
-                const location = gl.getUniformLocation(program, name);
+                const location = gl.getUniformLocation(this.program, name);
                 const type = this.getUniformType(uniforms, namePcs);
                 this.context.logger.debug(`Caching uniform ${name} (${type}) at location ${location}`);
                 this.uniforms[name] = {name, location, type};
@@ -128,4 +132,16 @@ export class ShaderProgram extends WebGLResource implements IShaderProgram {
             return struct[prop];
         }, uniform) as GLUniformType;
     }
+}
+
+class PouchDB {
+
+}
+
+class Database {
+
+    private static instances: Map<string, PouchDB> = new Map<string, PouchDB>();
+
+    public static get
+
 }

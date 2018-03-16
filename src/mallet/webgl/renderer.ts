@@ -1,10 +1,11 @@
 import {Entity, IEntity} from '../geometry/entity';
 import {ICamera} from '../geometry/camera';
-import {IWebGLResourceContext, WebGLResource} from './webgl-resource';
+import {WebGLResource} from './webgl-resource';
 import {GLMatrixSetter} from './shader';
 import {mat4} from 'gl-matrix';
 import {IShaderProgram} from './shader-program';
 import bind from 'bind-decorator';
+import {IWebGLResourceContext} from './webgl-resource-context';
 
 export interface IRenderer {
     renderEntity(entity: IEntity): void;
@@ -21,16 +22,16 @@ export interface IRendererOptions {
 
 export class Renderer extends WebGLResource implements IRenderer {
     // Rendering Geometry Uniforms
-    private setViewMatrix: GLMatrixSetter;
-    private setWorldMatrix: GLMatrixSetter;
-    private setProjectionMatrix: GLMatrixSetter;
+    protected setViewMatrix: GLMatrixSetter;
+    protected setWorldMatrix: GLMatrixSetter;
+    protected setProjectionMatrix: GLMatrixSetter;
 
-    private activeCamera: ICamera;
-    private activeProgram: IShaderProgram;
-    private entities: IEntity[];
+    protected activeCamera: ICamera;
+    protected activeProgram: IShaderProgram;
+    protected entities: IEntity[];
 
-    constructor(context: IWebGLResourceContext, options: IRendererOptions) {
-        super(context);
+    constructor(options: IRendererOptions) {
+        super();
 
         this.activeProgram = null;
         this.activeCamera = null;
@@ -59,6 +60,7 @@ export class Renderer extends WebGLResource implements IRenderer {
         const mesh = entity.getMesh();
         // https://stackoverflow.com/questions/6077002/using-webgl-index-buffers-for-drawing-meshes
         // get the vertex buffer from the mesh & send the vertex buffer to the GPU
+        // TODO: investigate cache bindBuffer & drawElements calls with bound parameters
         gl.bindBuffer(gl.ARRAY_BUFFER, mesh.getVertexBuffer());
 
         // use program & enable attributes
@@ -74,6 +76,10 @@ export class Renderer extends WebGLResource implements IRenderer {
         gl.drawElements(gl.TRIANGLES, mesh.getVertexCount(), gl.UNSIGNED_SHORT, 0);
     }
 
+    /**
+     * Set the camera that will be used to set the projection matrix while rendering
+     * @param {ICamera} camera
+     */
     public setActiveCamera(camera: ICamera): void {
         if (this.activeProgram === null) {
             throw new Error('Cannot set active camera without active program set. Call setActiveProgram.');
@@ -85,6 +91,11 @@ export class Renderer extends WebGLResource implements IRenderer {
         this.setProjectionMatrix(false, camera.getProjectionMatrix());
     }
 
+    /**
+     * Set the shader program that will the renderer will send data and make draw calls to.
+     * It is assumed to have "view", "world", and "projection" mat4 uniforms.
+     * @param {IShaderProgram} program
+     */
     public setActiveProgram(program: IShaderProgram): void {
         if (!program) {
             throw new ReferenceError('Active program cannot be null or undefined');
@@ -96,16 +107,15 @@ export class Renderer extends WebGLResource implements IRenderer {
         this.setWorldMatrix = this.activeProgram.getUniformSetter('world');
         this.setProjectionMatrix = this.activeProgram.getUniformSetter('projection');
 
-        // TODO: something better with this
-        // this.activeProgram.getUniformSetter('light.ambientColor')(0.1, 0.1, 0.1, 1.0);
-        // this.activeProgram.getUniformSetter('light.diffuseColor')(0.8, 0.8, 0.8, 1.0);
-        // this.activeProgram.getUniformSetter('light.direction')(-1, 0, 0);
-
         if (this.activeCamera !== null) {
             this.setProjectionMatrix(false, this.activeCamera.getProjectionMatrix());
         }
     }
 
+    /**
+     * Clear the current buffer, using color (default black)
+     * @param {number[]} color
+     */
     @bind public clear(color: number[] = [0, 0, 0, 1]): void {
         const {gl} = this.context;
         gl.clearColor(0.33, 0.33, 0.33, 1);

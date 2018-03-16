@@ -1,15 +1,18 @@
 
-import {IWebGLResource, IWebGLResourceContext, IWebGLResourceCtor} from './webgl-resource';
-import {ILibraryService, StaticSource} from '../library.provider';
+import {IWebGLResource, IWebGLResourceCtor} from './webgl-resource';
+import {ILibraryService} from '../library.provider';
 import {WebGLMesh} from './webgl-mesh';
 import {Mesh} from '../geometry/mesh';
 import bind from 'bind-decorator';
 
-export class WebGLResourceFactory {
+export interface IWebGLResourceFactory {
+    create<R extends IWebGLResource, O>(ctor: IWebGLResourceCtor<R, O>, options?: O): R;
+}
+
+export class WebGLResourceFactory implements IWebGLResourceFactory {
     private resourceCache: {[name: string]: IWebGLResource};
 
     constructor(
-        private context: IWebGLResourceContext,
         private library: ILibraryService) {
         this.resourceCache = {};
     }
@@ -20,7 +23,7 @@ export class WebGLResourceFactory {
     }
 
     public create<R extends IWebGLResource, O>(ctor: IWebGLResourceCtor<R, O>, options: O = null): R {
-        const res = new ctor(this.context, options);
+        const res = new ctor(options);
         res.init(this.resourceCache);
         return res;
     }

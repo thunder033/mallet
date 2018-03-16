@@ -83,7 +83,7 @@
 
 	/// <reference types="angular" />
 	import 'reflect-metadata';
-	import {IServiceProvider} from 'angular';
+	import {IController, IServiceProvider} from 'angular';
 	export interface InjectableMethodCtor {
 	    new (): InjectableMethod;
 	}
@@ -99,16 +99,22 @@
 	export namespace inject {
 	    const provider: (identifier: string) => ParameterDecorator;
 	}
+	/**
+	 * Annotate an Angular provider definition (ex. with module.provider instead of service, controller, etc.)
+	 * @param {{new(...args): angular.IServiceProvider}} constructor
+	 */
 	export function ngAnnotateProvider(constructor: {
 	    new (...args): IServiceProvider;
 	}): void;
+	export type AnnotatedProvider = Array<string | Function>;
+	export type AnnotatedController = Array<string | (new (...args: any[]) => IController) | ((...args: any[]) => void | IController)>;
 	/**
 	 * Construct an angular annotation array from dependency metadata
-	 * @param {Function} provider
-	 * @param {Function} baseClass
+	 * @param {Function} provider: A class (or subclass) with @inject decorators defining dependencies
+	 * @param {Function} baseClass: For a subclass with no injections, a class in the prototype chain that has dependencies
 	 * @returns {Array<string | Function>}
 	 */
-	export function ngAnnotate(provider: Function | InjectableMethodCtor, baseClass?: Function): Array<string | Function>;
+	export function ngAnnotate(provider: IController, baseClass?: Function): AnnotatedController;
 	export interface DepTree {
 	    [key: string]: string | DepTree;
 	}
@@ -378,7 +384,7 @@ declare const MDT: {
 	}
 
 	/// <reference types="angular" />
-	import {IAugmentedJQuery, IComponentOptions, IController} from 'angular';
+	import {IAugmentedJQuery, IComponentOptions} from 'angular';
 	export class RenderTargetCtrl implements IController {
 	    protected logger: Logger;
 	    protected $element: IAugmentedJQuery;
@@ -557,119 +563,6 @@ declare const MDT: {
 	    getIndexBuffer(): Readonly<ArrayBuffer>;
 	}
 
-	export interface IWebGLResourceContext {
-	    gl: WebGLRenderingContext;
-	    program: WebGLProgram;
-	    logger: Logger;
-	    transformBuffer: ArrayBuffer;
-	    renderTarget: IRenderTarget;
-	}
-	export interface IWebGLResourceCtor<Resource extends IWebGLResource, Options> {
-	    new (context: IWebGLResourceContext, options: Options): Resource;
-	}
-	export interface IWebGLResource {
-	    release(): void;
-	    init(resourceCache: {
-	        [name: string]: IWebGLResource;
-	    }): void;
-	}
-	export abstract class WebGLResource implements IWebGLResource {
-	    protected context: IWebGLResourceContext;
-	    constructor(context: IWebGLResourceContext);
-	    abstract release(): void;
-	    init(resourceCache: {
-	        [name: string]: IWebGLResource;
-	    }): void;
-	}
-
-	export interface IWebGLMesh extends IWebGLResource {
-	    getIndexBuffer(): WebGLBuffer;
-	    getVertexBuffer(): WebGLBuffer;
-	    getVertexCount(): number;
-	    getVertexSize(): number;
-	}
-	export interface IWebGLMeshOptions {
-	    mesh: Mesh;
-	}
-	export class WebGLMesh extends WebGLResource implements IWebGLMesh {
-	    private glVertexBuffer;
-	    private glIndexBuffer;
-	    private vertexCount;
-	    private vertexSize;
-	    constructor(context: IWebGLResourceContext, options: IWebGLMeshOptions);
-	    getIndexBuffer(): WebGLBuffer;
-	    getVertexBuffer(): WebGLBuffer;
-	    getVertexCount(): number;
-	    getVertexSize(): number;
-	    release(): void;
-	}
-
-	/// <reference types="gl-matrix" />
-
-	export interface IFastTransform {
-	    getOffset(): number;
-	    getBuffer(): Float32Array;
-	}
-	/**
-	 * Fast transform is a class designed to either front-load heavy lifting or offload it
-	 * to the graphics card. This is achieved by creating views of individual transform components
-	 * on a buffer that can be
-	 */
-	export class FastTransform implements ITransform, IFastTransform {
-	    private offset;
-	    static FAST_TRANSFORM_FLAG: number;
-	    private buffer;
-	    private scale;
-	    private position;
-	    private rotation;
-	    private origin;
-	    private parent;
-	    /**
-	     * Accepts an array buffer and position within that buffer to store data
-	     * @param {ArrayBuffer} buffer
-	     * @param {number} offset
-	     */
-	    constructor(buffer: ArrayBuffer, offset?: number);
-	    /**
-	     * Returns the offest of this transform in a shared array buffer (as determined during construction)
-	     * @returns {number}
-	     */
-	    getOffset(): number;
-	    getParent(): ITransform;
-	    translate(x: number, y: number, z: number): ITransform;
-	    vTimeTranslate(velocity: glMatrix.vec3, deltaTime: number): ITransform;
-	    setPosition(x: number, y: number, z: number): ITransform;
-	    getPosition(): Readonly<glMatrix.vec3>;
-	    vTranslate(delta: glMatrix.vec3): ITransform;
-	    setScale(x: number, y: number, z: number): ITransform;
-	    getScale(): Readonly<glMatrix.vec3>;
-	    scaleBy(x: number, y: number, z: number): ITransform;
-	    vScaleBy(delta: glMatrix.vec3): ITransform;
-	    vSetRotation(orientation: glMatrix.quat | glMatrix.vec3): ITransform;
-	    getRotation(): Readonly<glMatrix.quat>;
-	    setRotation(yaw: number, pitch: number, roll: number): ITransform;
-	    /**
-	     * rotate the transform by the given amount
-	     * @param {number} x
-	     * @param {number} [y]
-	     * @param {number} [z]
-	     * @returns {Transform}
-	     */
-	    rotateBy(x: number, y: number, z: number): ITransform;
-	    vRotateBy(delta: glMatrix.vec3): ITransform;
-	    /**
-	     * This method doe NOT return a 3D Transform matrix, contains in sequence transform
-	     * components: position, scale, quaternion rotation, origin
-	     * @returns {glMatrix.mat4}
-	     */
-	    getBuffer(): Float32Array;
-	    /**
-	     * Returns 3D transform matrix. Warning: in FastTransform, this is a very slow, creating a new mat4 each time
-	     * @returns {glMatrix.mat4}
-	     */
-	    getMatrix(): glMatrix.mat4;
-	}
-
 	/// <reference types="angular" />
 	import {} from 'angular';
 	export interface ILibrary<T, P> {
@@ -772,6 +665,136 @@ declare const MDT: {
 	    $get(): ILibraryService;
 	}
 
+	export interface IWebGLResourceFactory {
+	    create<R extends IWebGLResource, O>(ctor: IWebGLResourceCtor<R, O>, options?: O): R;
+	}
+	export class WebGLResourceFactory implements IWebGLResourceFactory {
+	    private library;
+	    private resourceCache;
+	    constructor(library: ILibraryService);
+	    init(meshNames: string[]): Promise<any>;
+	    create<R extends IWebGLResource, O>(ctor: IWebGLResourceCtor<R, O>, options?: O): R;
+	    private registerMesh(name);
+	}
+
+	export interface IWebGLResourceContext {
+	    gl: WebGLRenderingContext;
+	    logger: Logger;
+	    transformBuffer: ArrayBuffer;
+	    renderTarget: IRenderTarget;
+	    factory: IWebGLResourceFactory;
+	}
+
+	export interface IWebGLResourceCtor<Resource extends IWebGLResource, Options> {
+	    new (options?: Options): Resource;
+	}
+	export interface IWebGLResource {
+	    release(): void;
+	    init(resourceCache: {
+	        [name: string]: IWebGLResource;
+	    }): void;
+	}
+	export abstract class WebGLResource implements IWebGLResource {
+	    private static contexts;
+	    protected context: Readonly<IWebGLResourceContext>;
+	    static getContext(name?: string): IWebGLResourceContext;
+	    static buildContext(properties: IWebGLResourceContext, name?: string): IWebGLResourceContext;
+	    constructor(contextName?: string);
+	    abstract release(): void;
+	    init(resourceCache: {
+	        [name: string]: IWebGLResource;
+	    }): void;
+	}
+
+	export interface IWebGLMesh extends IWebGLResource {
+	    getIndexBuffer(): WebGLBuffer;
+	    getVertexBuffer(): WebGLBuffer;
+	    getVertexCount(): number;
+	    getVertexSize(): number;
+	}
+	export interface IWebGLMeshOptions {
+	    mesh: Mesh;
+	}
+	export class WebGLMesh extends WebGLResource implements IWebGLMesh {
+	    private glVertexBuffer;
+	    private glIndexBuffer;
+	    private vertexCount;
+	    private vertexSize;
+	    constructor(options: IWebGLMeshOptions);
+	    getIndexBuffer(): WebGLBuffer;
+	    getVertexBuffer(): WebGLBuffer;
+	    getVertexCount(): number;
+	    getVertexSize(): number;
+	    release(): void;
+	}
+
+	/// <reference types="gl-matrix" />
+
+	export interface IFastTransform {
+	    getOffset(): number;
+	    getBuffer(): Float32Array;
+	}
+	/**
+	 * Fast transform is a class designed to either front-load heavy lifting or offload it
+	 * to the graphics card. This is achieved by creating views of individual transform components
+	 * on a buffer that can be
+	 */
+	export class FastTransform implements ITransform, IFastTransform {
+	    private offset;
+	    static BUFFER_LENGTH: number;
+	    static FAST_TRANSFORM_FLAG: number;
+	    private buffer;
+	    private scale;
+	    private position;
+	    private rotation;
+	    private origin;
+	    private parent;
+	    /**
+	     * Accepts an array buffer and position within that buffer to store data
+	     * @param {ArrayBuffer} buffer
+	     * @param {number} offset bytes fast transform is offset from the start of the buffer
+	     */
+	    constructor(buffer: ArrayBuffer, offset?: number);
+	    /**
+	     * Returns the offest of this transform in a shared array buffer (as determined during construction)
+	     * @returns {number}
+	     */
+	    getOffset(): number;
+	    getParent(): ITransform;
+	    translate(x: number, y: number, z: number): ITransform;
+	    vTimeTranslate(velocity: glMatrix.vec3, deltaTime: number): ITransform;
+	    setPosition(x: number, y: number, z: number): ITransform;
+	    getPosition(): Readonly<glMatrix.vec3>;
+	    vTranslate(delta: glMatrix.vec3): ITransform;
+	    setScale(x: number, y: number, z: number): ITransform;
+	    getScale(): Readonly<glMatrix.vec3>;
+	    scaleBy(x: number, y: number, z: number): ITransform;
+	    vScaleBy(delta: glMatrix.vec3): ITransform;
+	    vSetRotation(orientation: glMatrix.quat | glMatrix.vec3): ITransform;
+	    getRotation(): Readonly<glMatrix.quat>;
+	    setRotation(yaw: number, pitch: number, roll: number): ITransform;
+	    /**
+	     * rotate the transform by the given amount
+	     * @param {number} x
+	     * @param {number} [y]
+	     * @param {number} [z]
+	     * @returns {Transform}
+	     */
+	    rotateBy(x: number, y: number, z: number): ITransform;
+	    vRotateBy(delta: glMatrix.vec3): ITransform;
+	    /**
+	     * This method doe NOT return a 3D Transform matrix, contains in sequence transform
+	     * components: position, scale, quaternion rotation, origin
+	     * @returns {glMatrix.mat4}
+	     */
+	    getBuffer(): Float32Array;
+	    /**
+	     * Returns 3D transform matrix. Warning: in FastTransform, this is a very slow, creating a new mat4 each time
+	     * @returns {glMatrix.mat4}
+	     */
+	    getMatrix(): glMatrix.mat4;
+	}
+
 	/// <reference types="gl-matrix" />
 	import {quat, vec3} from 'gl-matrix';
 	export interface IEntity {
@@ -802,7 +825,7 @@ declare const MDT: {
 	    private mesh;
 	    static getIndex(): EntityCollection<IEntity>;
 	    static getUpdateIndex(): EntityCollection<(dt: number, tt: number) => void>;
-	    constructor(context: IWebGLResourceContext, meshName: string);
+	    constructor(meshName: string);
 	    init(resources: {
 	        [name: string]: IWebGLResource;
 	    }): void;
@@ -894,16 +917,6 @@ declare const MDT: {
 
 	export const mallet: any;
 
-	export class WebGLResourceFactory {
-	    private context;
-	    private library;
-	    private resourceCache;
-	    constructor(context: IWebGLResourceContext, library: ILibraryService);
-	    init(meshNames: string[]): Promise<any>;
-	    create<R extends IWebGLResource, O>(ctor: IWebGLResourceCtor<R, O>, options?: O): R;
-	    private registerMesh(name);
-	}
-
 	export interface IShader extends IWebGLResource {
 	    prepare(context: IWebGLResourceContext): void;
 	    getId(): string;
@@ -977,7 +990,7 @@ declare const MDT: {
 	    protected options: IShaderOptions;
 	    protected id: string;
 	    protected shader: WebGLShader;
-	    constructor(context: IWebGLResourceContext, options: IShaderOptions);
+	    constructor(options: IShaderOptions);
 	    getShader(): WebGLShader;
 	    getId(): string;
 	    prepare({gl}: IWebGLResourceContext): void;
@@ -986,14 +999,15 @@ declare const MDT: {
 
 	export interface IBufferFormatOptions {
 	    shaderSpec: IShaderSpec;
+	    program: WebGLProgram;
 	}
 	export interface IBufferFormat {
 	    apply(): void;
 	}
 	export class BufferFormat extends WebGLResource implements IBufferFormat {
-	    protected context: IWebGLResourceContext;
 	    apply: () => void;
-	    constructor(context: IWebGLResourceContext, options: IBufferFormatOptions);
+	    private program;
+	    constructor(options: IBufferFormatOptions);
 	    release(): void;
 	    /**
 	     * Generates a layout method for the buffer with bound data to optimize for performance
@@ -1023,11 +1037,11 @@ declare const MDT: {
 	    name: string;
 	}
 	export class ShaderProgram extends WebGLResource implements IShaderProgram {
-	    protected context: IWebGLResourceContext;
 	    private bufferFormat;
 	    private uniforms;
 	    private isActive;
-	    constructor(context: IWebGLResourceContext, config: IProgramOptions);
+	    private program;
+	    constructor(config: IProgramOptions);
 	    getUniformSetter(name: string): (data: any) => void;
 	    use(): void;
 	    getGLProgram(): WebGLProgram;
@@ -1086,17 +1100,30 @@ declare const MDT: {
 	    program: IShaderProgram;
 	}
 	export class Renderer extends WebGLResource implements IRenderer {
-	    private setViewMatrix;
-	    private setWorldMatrix;
-	    private setProjectionMatrix;
-	    private activeCamera;
-	    private activeProgram;
-	    private entities;
-	    constructor(context: IWebGLResourceContext, options: IRendererOptions);
+	    protected setViewMatrix: GLMatrixSetter;
+	    protected setWorldMatrix: GLMatrixSetter;
+	    protected setProjectionMatrix: GLMatrixSetter;
+	    protected activeCamera: ICamera;
+	    protected activeProgram: IShaderProgram;
+	    protected entities: IEntity[];
+	    constructor(options: IRendererOptions);
 	    renderScene(): void;
 	    renderEntity(entity: IEntity): void;
+	    /**
+	     * Set the camera that will be used to set the projection matrix while rendering
+	     * @param {ICamera} camera
+	     */
 	    setActiveCamera(camera: ICamera): void;
+	    /**
+	     * Set the shader program that will the renderer will send data and make draw calls to.
+	     * It is assumed to have "view", "world", and "projection" mat4 uniforms.
+	     * @param {IShaderProgram} program
+	     */
 	    setActiveProgram(program: IShaderProgram): void;
+	    /**
+	     * Clear the current buffer, using color (default black)
+	     * @param {number[]} color
+	     */
 	    clear(color?: number[]): void;
 	    release(): void;
 	}
@@ -1158,9 +1185,27 @@ declare const MDT: {
 	    /** @description timestamp of the last frame */
 	    private lastFrameTime;
 	    constructor(maxFrameRate: number, $q: IQService, library: ILibraryService, stage: IWebGLStage, $element: IAugmentedJQuery, logger: Logger);
+	    /**
+	     * Implement the $postLink method triggered when all configured providers are available
+	     */
 	    $postLink(): void;
+	    /**
+	     * The config method is executed during construction, and before the component is linked
+	     * to the render target element - during Angular's config phase.
+	     */
 	    abstract config(): void;
-	    abstract init(context: IWebGLResourceContext): any;
+	    /**
+	     * The init method is executed during the $postLink phase, providing full access to the
+	     * render target
+	     * @param {IWebGLResourceContext} context
+	     * @returns {any}
+	     */
+	    abstract init(context: IWebGLResourceContext): void | Promise<any>;
+	    /**
+	     * The postUpdate method can perform any operations between entity updates and rendering
+	     * @param {number} dt
+	     * @param {number} tt
+	     */
 	    postUpdate(dt: number, tt: number): void;
 	    /**
 	     * Update the FPS value
@@ -1236,4 +1281,37 @@ declare const MDT: {
 	     */
 	    getNext(): T;
 	    resetPointer(): void;
+	}
+
+	export class TestBase {
+	    protected context: {
+	        prop1: number;
+	    };
+	    /**
+	     * This inits stuff
+	     */
+	    init(arg: number): void;
+	}
+	export interface ITestBase {
+	    /**
+	     * Does some stuff with arg
+	     * @param {number} arg
+	     */
+	    init(arg: number): any;
+	} const TestMixed_base: {
+	    new (...args: any[]): {
+	        prop1: number;
+	        testMethod(arg: string): any;
+	        context: {
+	            prop1: number;
+	        };
+	        init(arg: number): void;
+	    };
+	} & typeof TestBase;
+	export class TestMixed extends TestMixed_base implements ITestBase {
+	    init(arg: number): void;
+	}
+
+	export interface IFastRendererOptions extends IRendererOptions {
+	    entityCount: number;
 	}

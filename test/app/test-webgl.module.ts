@@ -21,8 +21,8 @@ class ColorCube extends Entity {
     private cubeDelta: number;
     private cubeRot: number;
 
-    constructor(context: IWebGLResourceContext) {
-        super(context, 'cube');
+    constructor() {
+        super('cube');
         this.cubeZ = -1;
         this.cubeDelta = 1 / 500;
         this.cubeRot = 0;

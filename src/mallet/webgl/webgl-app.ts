@@ -1,7 +1,6 @@
 import {IAugmentedJQuery, IController, IQService} from 'angular';
 import {ICamera} from '../geometry/camera';
 import {IRenderer} from './renderer';
-import {IWebGLResourceContext} from './webgl-resource';
 import {inject} from '../lib/injector-plus';
 import {MDT} from '../mallet.depedency-tree';
 import {ILibraryService} from '../library.provider';
@@ -9,6 +8,7 @@ import {IWebGLStage} from './webgl-stage';
 import {Logger} from '../lib/logger';
 import bind from 'bind-decorator';
 import {Entity, IEntity} from '../geometry/entity';
+import {IWebGLResourceContext} from './webgl-resource-context';
 
 export interface IWebGLApp {
     preUpdate?(dt: number, tt: number);
@@ -64,9 +64,11 @@ export abstract class WebGLApp implements IController, IWebGLApp {
         @inject(MDT.webgl.WebGLStage) protected stage: IWebGLStage,
         @inject(MDT.ng.$element) protected $element: IAugmentedJQuery,
         @inject(MDT.Logger) protected logger: Logger) {
+        // get references to constructed entities and their update methods
         this.entities = Entity.getIndex();
         this.entityUpdates = Entity.getUpdateIndex();
 
+        // If the preUpdate method is implemented, schedule it to be executed
         if (this.preUpdate instanceof Function) {
             this.entityUpdates.push(this.preUpdate.bind(this));
         }
@@ -77,6 +79,9 @@ export abstract class WebGLApp implements IController, IWebGLApp {
         this.config();
     }
 
+    /**
+     * Implement the $postLink method triggered when all configured providers are available
+     */
     public $postLink(): void {
         this.context = this.stage.getContext();
         this.$q.when(this.init(this.context))
@@ -86,9 +91,25 @@ export abstract class WebGLApp implements IController, IWebGLApp {
             });
     }
 
+    /**
+     * The config method is executed during construction, and before the component is linked
+     * to the render target element - during Angular's config phase.
+     */
     public abstract config(): void;
-    public abstract init(context: IWebGLResourceContext): any;
 
+    /**
+     * The init method is executed during the $postLink phase, providing full access to the
+     * render target
+     * @param {IWebGLResourceContext} context
+     * @returns {any}
+     */
+    public abstract init(context: IWebGLResourceContext): void | Promise<any>;
+
+    /**
+     * The postUpdate method can perform any operations between entity updates and rendering
+     * @param {number} dt
+     * @param {number} tt
+     */
     public postUpdate(dt: number, tt: number) {
         // no-op
     }

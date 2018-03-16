@@ -2,9 +2,10 @@
 import {ITransform, Transform} from './transform';
 import {IWebGLMesh, WebGLMesh} from '../webgl/webgl-mesh';
 import {quat, vec3} from 'gl-matrix';
-import {IWebGLResource, IWebGLResourceContext, WebGLResource} from '../webgl/webgl-resource';
+import {IWebGLResource, WebGLResource} from '../webgl/webgl-resource';
 import {FastTransform} from './fast-transform';
-import {ILibraryService} from '../library.provider';
+import bind from 'bind-decorator';
+import {IWebGLResourceContext} from '../webgl/webgl-resource-context';
 
 export interface IEntity {
     getTransform(): ITransform;
@@ -48,21 +49,23 @@ export abstract class Entity extends WebGLResource implements IEntity, IWebGLRes
         return Entity.updateMethods;
     }
 
-    constructor(context: IWebGLResourceContext, private meshName: string) {
-        super(context);
+    constructor(private meshName: string) {
+        super();
         // register entity in the index
         this.id = Entity.curId++;
         Entity.index[this.id] = this;
 
         if (this.update !== Entity.prototype.update) {
-            context.logger.debug(`Add entity update method for entity with mesh ${meshName}`);
+            this.context.logger.debug(`Add entity update method for entity with mesh ${meshName}`);
             Entity.updateMethods.push(this.update.bind(this));
         }
 
         this.mesh = null;
-
-        // this.transform = new FastTransform(this.context.transformBuffer);
-        this.transform = new Transform();
+        // since the id is implemented as an incrementing integer, it works as offset base
+        const offset = this.id * FastTransform.BUFFER_LENGTH;
+        this.transform = this.context.transformBuffer !== null
+            ? new FastTransform(this.context.transformBuffer, offset)
+            : this.transform = new Transform();
 
         this.getPosition = this.transform.getPosition.bind(this.transform);
         this.getRotation = this.transform.getRotation.bind(this.transform);
@@ -76,7 +79,7 @@ export abstract class Entity extends WebGLResource implements IEntity, IWebGLRes
         this.mesh = resources[this.meshName] as WebGLMesh;
     }
 
-    public scale(scalar: number): void {
+    @bind public scale(scalar: number): void {
         this.transform.scaleBy(scalar, scalar, scalar);
     }
 
@@ -93,7 +96,7 @@ export abstract class Entity extends WebGLResource implements IEntity, IWebGLRes
     }
 
     public destroy(): void {
-        throw new Error('destroying entities is not supported in this implementation');
+        throw new Error('destroying entities is not supported in current implementation');
     }
 
     public release(): void {

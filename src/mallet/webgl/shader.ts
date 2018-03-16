@@ -1,5 +1,6 @@
-import {IWebGLResource, IWebGLResourceContext, WebGLResource} from './webgl-resource';
+import {IWebGLResource, WebGLResource} from './webgl-resource';
 import {DTO} from '../library.provider';
+import {IWebGLResourceContext} from './webgl-resource-context';
 
 export interface IShader extends IWebGLResource {
     prepare(context: IWebGLResourceContext): void;
@@ -87,9 +88,9 @@ export class Shader extends WebGLResource implements IShader {
     protected id: string;
     protected shader: WebGLShader;
 
-    constructor(context: IWebGLResourceContext, protected options: IShaderOptions) {
-        super(context);
-        const {gl} = context;
+    constructor(protected options: IShaderOptions) {
+        super();
+        const {gl} = this.context;
         this.id = options.id;
         const shaderSource = options.src || document.getElementById(options.id).textContent;
 

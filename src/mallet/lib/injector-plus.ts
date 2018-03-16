@@ -43,6 +43,10 @@ export namespace inject {
     export const provider = (identifier: string) => inject(`${identifier}Provider`);
 }
 
+/**
+ * Annotate an Angular provider definition (ex. with module.provider instead of service, controller, etc.)
+ * @param {{new(...args): angular.IServiceProvider}} constructor
+ */
 export function ngAnnotateProvider(constructor: {new(...args): IServiceProvider}) {
     const provider: IServiceProvider = constructor.prototype;
     const annotations: string[] = Reflect.getOwnMetadata(annotationKey, constructor) || [];
@@ -59,13 +63,16 @@ export function ngAnnotateProvider(constructor: {new(...args): IServiceProvider}
     provider.$get = [...annotations, method];
 }
 
+export type AnnotatedProvider = Array<string | Function>;
+export type AnnotatedController = Array<string |  (new (...args: any[]) => IController) | ((...args: any[]) => void | IController)>;
 /**
  * Construct an angular annotation array from dependency metadata
- * @param {Function} provider
- * @param {Function} baseClass
+ * @param {Function} provider: A class (or subclass) with @inject decorators defining dependencies
+ * @param {Function} baseClass: For a subclass with no injections, a class in the prototype chain that has dependencies
  * @returns {Array<string | Function>}
  */
-export function ngAnnotate(provider: Function | InjectableMethodCtor, baseClass: Function = null): Array<string | Function> {
+export function ngAnnotate(provider: IController, baseClass?: Function): AnnotatedController;
+export function ngAnnotate(provider: Function | InjectableMethodCtor, baseClass: Function = null): AnnotatedProvider {
     let clazz = baseClass || provider;
     let annotations: string[] = Reflect.getMetadata(annotationKey, clazz) || [];
 

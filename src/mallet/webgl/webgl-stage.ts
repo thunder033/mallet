@@ -1,4 +1,3 @@
-
 import {RenderTargetWebGL} from '../render-target.factory';
 import {WebGLResourceFactory} from './webgl-resource-factory';
 import {inject} from '../lib/injector-plus';
@@ -6,13 +5,10 @@ import {MDT} from '../mallet.depedency-tree';
 import {Logger} from '../lib/logger';
 import bind from 'bind-decorator';
 import {IQService} from 'angular';
-import {IWebGLResourceContext} from './webgl-resource';
 import {IProgramOptions, IShaderProgram, ShaderProgram} from './shader-program';
-import {IWebGLMesh, WebGLMesh} from './webgl-mesh';
-import {ICamera} from '../geometry/camera';
-import {GLMatrixSetter} from './shader';
-import {mat4} from 'gl-matrix';
 import {ILibraryService} from '../library.provider';
+import {IWebGLResourceContext} from './webgl-resource-context';
+import {WebGLResource} from './webgl-resource';
 
 export interface IWebGLStage {
     set(renderTarget: RenderTargetWebGL): void;
@@ -34,13 +30,7 @@ export class WebGLStage implements IWebGLStage {
         @inject(MDT.Library) private library: ILibraryService,
         @inject(MDT.ng.$q) private $q: IQService,
         @inject(MDT.Logger) private logger: Logger) {
-        this.context = {
-            gl: null,
-            program: null,
-            logger,
-            renderTarget: null,
-            transformBuffer: null,
-        };
+        this.context = null;
         this.programs = {};
     }
 
@@ -49,17 +39,23 @@ export class WebGLStage implements IWebGLStage {
         this.logger.debug(`Setting WebGL Stage`);
         this.renderTarget = renderTarget;
         this.gl = renderTarget.getContext();
-        this.context.renderTarget = renderTarget;
-        this.context.gl = this.gl;
 
         try {
-            const {gl} = this.context;
-            gl.enable(gl.DEPTH_TEST); // could replace this with blending: http://learningwebgl.com/blog/?p=859
+            // could replace this with blending: http://learningwebgl.com/blog/?p=859
+            this.gl.enable(this.gl.DEPTH_TEST);
 
             // TODO: create materials
 
-            this.glFactory = new WebGLResourceFactory(this.context, this.library);
-            this.glFactory.init(['cube']);
+            this.glFactory = new WebGLResourceFactory(this.library);
+            this.context = WebGLResource.buildContext({
+                gl: this.gl,
+                factory: this.glFactory,
+                logger: this.logger,
+                transformBuffer: null,
+                renderTarget: this.renderTarget,
+            });
+
+            this.glFactory.init(['cube']); // TODO: make this not hard-coded
             this.logger.debug(`WebGL Stage set`);
             return true;
         } catch (e) {
@@ -79,9 +75,10 @@ export class WebGLStage implements IWebGLStage {
      * @returns {IShaderProgram}
      */
     @bind public addProgram(programConfig: IProgramOptions, setActive: boolean = false): IShaderProgram {
-        const program = new ShaderProgram(this.context, programConfig);
+        const program = this.context.factory.create(ShaderProgram, programConfig);
+        setActive = Object.keys(this.programs).length === 0;
         this.programs[programConfig.name] = program;
-        if (this.context.program === null || setActive === true) {
+        if (setActive === true) {
             this.setActiveProgram(programConfig.name);
         }
 
@@ -97,7 +94,6 @@ export class WebGLStage implements IWebGLStage {
             throw new ReferenceError(`Program with ${name} does not exist in this stage`);
         }
 
-        this.context.program = this.programs[name];
         this.programs[name].use();
     }
 
