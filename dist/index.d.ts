@@ -666,14 +666,41 @@ declare const MDT: {
 	}
 
 	export interface IWebGLResourceFactory {
-	    create<R extends IWebGLResource, O>(ctor: IWebGLResourceCtor<R, O>, options?: O): R;
+	    create<R extends IWebGLResource>(ctor: IWebGLSimpleResourceCtor<R>): R;
+	    create<R extends IWebGLResource, O>(ctor: IWebGLResourceCtor<R, O>, options: O): R;
 	}
+	/**
+	 * Provides interface to create new {@link IWebGLResource} instances with access to the existing
+	 * (white-listed) cache of resources, including meshes
+	 */
 	export class WebGLResourceFactory implements IWebGLResourceFactory {
 	    private library;
 	    private resourceCache;
 	    constructor(library: ILibraryService);
+	    /**
+	     * Cache pre-defined resources for instant access
+	     * @param {string[]} meshNames
+	     * @returns {Promise<any>}
+	     */
 	    init(meshNames: string[]): Promise<any>;
-	    create<R extends IWebGLResource, O>(ctor: IWebGLResourceCtor<R, O>, options?: O): R;
+	    /**
+	     * Create a new resource instance with no parameters (class must have default constructor)
+	     * @param {IWebGLSimpleResourceCtor<R extends IWebGLResource>} ctor
+	     * @returns {@link IWebGLResource} created resource instance
+	     */
+	    create<R extends IWebGLResource>(ctor: IWebGLSimpleResourceCtor<R>): R;
+	    /**
+	     * Create a parameterized resource instance
+	     * @param {IWebGLResourceCtor<R extends IWebGLResource, O>} ctor
+	     * @param {O} options
+	     * @returns {@link IWebGLResource} create resource instance
+	     */
+	    create<R extends IWebGLResource, O>(ctor: IWebGLResourceCtor<R, O>, options: O): R;
+	    /**
+	     * Retrieve a mesh from the library and cache it for synchronous access
+	     * @param {string} name
+	     * @returns {Promise<WebGLMesh>}
+	     */
 	    private registerMesh(name);
 	}
 
@@ -686,7 +713,10 @@ declare const MDT: {
 	}
 
 	export interface IWebGLResourceCtor<Resource extends IWebGLResource, Options> {
-	    new (options?: Options): Resource;
+	    new (options: Options): Resource;
+	}
+	export interface IWebGLSimpleResourceCtor<Resource extends IWebGLResource> {
+	    new (): Resource;
 	}
 	export interface IWebGLResource {
 	    release(): void;
@@ -1055,12 +1085,15 @@ declare const MDT: {
 	/// <reference types="angular" />
 	import {IQService} from 'angular';
 	export interface IWebGLStage {
-	    set(renderTarget: RenderTargetWebGL): void;
+	    set(renderTarget: RenderTargetWebGL): Promise<IWebGLResourceFactory>;
 	    getFactory(): WebGLResourceFactory;
 	    addProgram(programConfig: IProgramOptions): IShaderProgram;
 	    setActiveProgram(name: string): void;
 	    getContext(): IWebGLResourceContext;
 	}
+	/**
+	 * Abstracts setup and interactions for WebGL programs, their render target, and related resources
+	 */
 	export class WebGLStage implements IWebGLStage {
 	    private library;
 	    private $q;
@@ -1071,12 +1104,22 @@ declare const MDT: {
 	    private context;
 	    private programs;
 	    constructor(library: ILibraryService, $q: IQService, logger: Logger);
-	    set(renderTarget: RenderTargetWebGL): boolean;
+	    /**
+	     * Set up the stage with a render context and create factory for {@link IWebGLResource} instances
+	     * @param {RenderTargetWebGL} renderTarget
+	     * @returns {boolean} If the operation completed successfully
+	     */
+	    set(renderTarget: RenderTargetWebGL): Promise<IWebGLResourceFactory>;
+	    /**
+	     * Retrieve the resource context for the stage
+	     * @returns {IWebGLResourceContext}
+	     */
 	    getContext(): IWebGLResourceContext;
 	    /**
-	     * Create a new shader program and add it to available stage programs
+	     * Create a new shader program and add it to available stage programs. If there are no existing programs for
+	     * this stage, the program will be made active.
 	     * @param {IProgramOptions} programConfig
-	     * @param {boolean} setActive
+	     * @param {boolean} [setActive]
 	     * @returns {IShaderProgram}
 	     */
 	    addProgram(programConfig: IProgramOptions, setActive?: boolean): IShaderProgram;
@@ -1085,6 +1128,10 @@ declare const MDT: {
 	     * @param {string} name
 	     */
 	    setActiveProgram(name: string): void;
+	    /**
+	     * Get factory to create resources with this stage's context
+	     * @returns {WebGLResourceFactory}
+	     */
 	    getFactory(): WebGLResourceFactory;
 	}
 
