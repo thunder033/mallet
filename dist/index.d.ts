@@ -120,7 +120,7 @@
 	}
 	export function buildTree(tree: DepTree, module: string): void;
 
-declare const MDT: {
+	 declare const MDT: {
 	    component: {
 	        webGLStage: string;
 	        renderTarget: string;
@@ -1345,7 +1345,7 @@ declare const MDT: {
 	     * @param {number} arg
 	     */
 	    init(arg: number): any;
-	} const TestMixed_base: {
+	} declare const TestMixed_base: {
 	    new (...args: any[]): {
 	        prop1: number;
 	        testMethod(arg: string): any;

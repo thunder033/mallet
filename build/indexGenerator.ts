@@ -13,6 +13,9 @@ const reader = readline.createInterface({
 
 const moduleDeclaration = /^declare module/;
 const malletImport = /(import|export).+from 'mallet/;
+const namespaceDeclaration = /export namespace/;
+const blockTermination = /^[\s}]+$/;
+const blockStart = /{$/;
 
 function isExcluded(line: string) {
     return moduleDeclaration.exec(line) || malletImport.exec(line) || line === '}';
@@ -42,19 +45,45 @@ function stripDuplicateDeclarations(line) {
     return line;
 }
 
-const constLine = /^\s{2}const .+:/;
-function declareConst(line) {
-    if (constLine.exec(line) !== null) {
-        return (`declare${line}`).replace(/\s+/, ' ');
+/**
+ * Since were stripping the module declarations, we have to "declare" constant in the global space
+ * @param {string} line
+ * @param {boolean} isAmbient
+ * @returns {string}
+ */
+function declareConst(line: string, isAmbient: boolean) {
+    const constLine = /^[\s}]+(const\s).+:/;
+    if (!isAmbient && constLine.exec(line) !== null) {
+        return line.replace(/const\s/, 'declare const ');
     }
 
     return line;
 }
 
+let blockLevel = 0;
+
+/**
+ * Determine if were inside of namespace declaration (in a super basic way)
+ * @param line
+ * @returns {boolean}
+ */
+function getIsAmbientContext(line): boolean {
+    if (namespaceDeclaration.exec(line) || blockLevel > 0 && blockStart.exec(line)) {
+        blockLevel++;
+    }
+
+    if (blockLevel > 0 && blockTermination.exec(line)) {
+        blockLevel--;
+    }
+
+    return blockLevel > 0;
+}
+
 reader.on('line', (line) => {
     if (!isExcluded(line)) {
-        const finalLine = [stripDuplicateDeclarations, declareConst]
-            .reduce((processedLine, processor) => processor(processedLine), line);
+        const isAmbient: boolean = getIsAmbientContext(line);
+        const finalLine = ([stripDuplicateDeclarations, declareConst] as Function[])
+            .reduce((processedLine, processor) => processor(processedLine, isAmbient), line);
         indexOut.push(finalLine);
     }
 });

@@ -133,15 +133,3 @@ export class ShaderProgram extends WebGLResource implements IShaderProgram {
         }, uniform) as GLUniformType;
     }
 }
-
-class PouchDB {
-
-}
-
-class Database {
-
-    private static instances: Map<string, PouchDB> = new Map<string, PouchDB>();
-
-    public static get
-
-}
