@@ -29,12 +29,10 @@ class WebGLStageCtrl implements IController {
 
     public $postLink(): void {
         this.loadRenderingContext();
-        const result = this.stage.set(this.renderTarget);
-
-        if (!result) {
+        this.stage.set(this.renderTarget).catch((e) => {
+            this.logger.error(e.message || e);
             this.logger.warn(`Failed to WebGL stage, exiting setup method`);
-            return;
-        }
+        });
     }
 
     private loadRenderingContext(): void {

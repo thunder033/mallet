@@ -1,5 +1,5 @@
 import {RenderTargetWebGL} from '../render-target.factory';
-import {WebGLResourceFactory} from './webgl-resource-factory';
+import {IWebGLResourceFactory, WebGLResourceFactory} from './webgl-resource-factory';
 import {inject} from '../lib/injector-plus';
 import {MDT} from '../mallet.depedency-tree';
 import {Logger} from '../lib/logger';
@@ -11,13 +11,16 @@ import {IWebGLResourceContext} from './webgl-resource-context';
 import {WebGLResource} from './webgl-resource';
 
 export interface IWebGLStage {
-    set(renderTarget: RenderTargetWebGL): void;
+    set(renderTarget: RenderTargetWebGL): Promise<IWebGLResourceFactory>;
     getFactory(): WebGLResourceFactory;
     addProgram(programConfig: IProgramOptions): IShaderProgram;
     setActiveProgram(name: string): void;
     getContext(): IWebGLResourceContext;
 }
 
+/**
+ * Abstracts setup and interactions for WebGL programs, their render target, and related resources
+ */
 export class WebGLStage implements IWebGLStage {
     private renderTarget: RenderTargetWebGL;
     private gl: WebGLRenderingContext;
@@ -34,49 +37,55 @@ export class WebGLStage implements IWebGLStage {
         this.programs = {};
     }
 
-    @bind
-    public set(renderTarget: RenderTargetWebGL): boolean {
+    /**
+     * Set up the stage with a render context and create factory for {@link IWebGLResource} instances
+     * @param {RenderTargetWebGL} renderTarget
+     * @returns {boolean} If the operation completed successfully
+     */
+    @bind public set(renderTarget: RenderTargetWebGL): Promise<IWebGLResourceFactory> {
         this.logger.debug(`Setting WebGL Stage`);
         this.renderTarget = renderTarget;
         this.gl = renderTarget.getContext();
 
-        try {
-            // could replace this with blending: http://learningwebgl.com/blog/?p=859
-            this.gl.enable(this.gl.DEPTH_TEST);
+        // could replace this with blending: http://learningwebgl.com/blog/?p=859
+        this.gl.enable(this.gl.DEPTH_TEST);
 
-            // TODO: create materials
+        // TODO: create materials
 
-            this.glFactory = new WebGLResourceFactory(this.library);
-            this.context = WebGLResource.buildContext({
-                gl: this.gl,
-                factory: this.glFactory,
-                logger: this.logger,
-                transformBuffer: null,
-                renderTarget: this.renderTarget,
-            });
+        this.glFactory = new WebGLResourceFactory(this.library);
+        this.context = WebGLResource.buildContext({
+            gl: this.gl,
+            factory: this.glFactory,
+            logger: this.logger,
+            transformBuffer: null,
+            renderTarget: this.renderTarget,
+        });
 
-            this.glFactory.init(['cube']); // TODO: make this not hard-coded
+        // TODO: make this mesh initialization not hard-coded
+        return this.glFactory.init(['cube']).then(() => {
             this.logger.debug(`WebGL Stage set`);
-            return true;
-        } catch (e) {
-            this.logger.error(e.message || e);
-            return false;
-        }
+            return this.getFactory();
+        });
     }
 
+    /**
+     * Retrieve the resource context for the stage
+     * @returns {IWebGLResourceContext}
+     */
     public getContext(): IWebGLResourceContext {
         return this.context;
     }
 
     /**
-     * Create a new shader program and add it to available stage programs
+     * Create a new shader program and add it to available stage programs. If there are no existing programs for
+     * this stage, the program will be made active.
      * @param {IProgramOptions} programConfig
-     * @param {boolean} setActive
+     * @param {boolean} [setActive]
      * @returns {IShaderProgram}
      */
-    @bind public addProgram(programConfig: IProgramOptions, setActive: boolean = false): IShaderProgram {
+    @bind public addProgram(programConfig: IProgramOptions, setActive?: boolean): IShaderProgram {
         const program = this.context.factory.create(ShaderProgram, programConfig);
-        setActive = Object.keys(this.programs).length === 0;
+        setActive = typeof setActive === 'boolean' ? setActive : Object.keys(this.programs).length === 0;
         this.programs[programConfig.name] = program;
         if (setActive === true) {
             this.setActiveProgram(programConfig.name);
@@ -97,6 +106,10 @@ export class WebGLStage implements IWebGLStage {
         this.programs[name].use();
     }
 
+    /**
+     * Get factory to create resources with this stage's context
+     * @returns {WebGLResourceFactory}
+     */
     public getFactory(): WebGLResourceFactory {
         return this.glFactory;
     }
