@@ -4,7 +4,6 @@ import {
     Camera,
     Entity,
     ICamera,
-    ILibraryService,
     IRenderer,
     IShaderOptions,
     IWebGLResourceContext,
@@ -62,7 +61,7 @@ class TestApp extends WebGLApp implements IController {
         return Promise.all([ // load resources
             this.library.get(ShaderDTO, '3d-vertex-shader'),
             this.library.get(ShaderDTO, 'fragment-shader'),
-        ]).then(([vertex, fragment]: [IShaderOptions, IShaderOptions]) => {
+        ]).then(([vertex, fragment]: IShaderOptions[]) => {
             const program = this.stage.addProgram({shaders: {vertex, fragment}, name: '3d'});
             const glFactory = this.stage.getFactory();
 
@@ -81,6 +80,6 @@ class TestApp extends WebGLApp implements IController {
 }
 
 testApp.component('testHarness', {
-    controller: ngAnnotate(TestApp, WebGLApp) as any,
+    controller: ngAnnotate(TestApp, WebGLApp),
     template: '<mallet-webgl-stage></mallet-webgl-stage>',
 });
