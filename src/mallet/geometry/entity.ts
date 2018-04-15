@@ -5,7 +5,6 @@ import {quat, vec3} from 'gl-matrix';
 import {IWebGLResource, WebGLResource} from '../webgl/webgl-resource';
 import {FastTransform} from './fast-transform';
 import bind from 'bind-decorator';
-import {IWebGLResourceContext} from '../webgl/webgl-resource-context';
 
 export interface IEntity {
     getTransform(): ITransform;

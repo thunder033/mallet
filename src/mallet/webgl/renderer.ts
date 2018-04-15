@@ -5,7 +5,6 @@ import {GLMatrixSetter} from './shader';
 import {mat4} from 'gl-matrix';
 import {IShaderProgram} from './shader-program';
 import bind from 'bind-decorator';
-import {IWebGLResourceContext} from './webgl-resource-context';
 
 export interface IRenderer {
     renderEntity(entity: IEntity): void;

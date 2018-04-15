@@ -1,6 +1,5 @@
 import {WebGLResource} from './webgl-resource';
 import {GLDataType, IAttribDescription, IShaderSpec} from './shader';
-import {IWebGLResourceContext} from './webgl-resource-context';
 
 const byteSizes = {
     [GLDataType.BYTE]: 1,

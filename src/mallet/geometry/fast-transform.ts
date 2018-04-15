@@ -1,4 +1,3 @@
-
 import {ITransform} from './transform';
 import glMatrix = require('gl-matrix');
 

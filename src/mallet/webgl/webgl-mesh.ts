@@ -1,7 +1,5 @@
-
 import {Mesh} from '../geometry/mesh';
 import {IWebGLResource, WebGLResource} from './webgl-resource';
-import {IWebGLResourceContext} from './webgl-resource-context';
 
 export interface IWebGLMesh extends IWebGLResource {
     getIndexBuffer(): WebGLBuffer;
