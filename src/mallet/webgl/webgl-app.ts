@@ -3,7 +3,7 @@ import {ICamera} from '../geometry/camera';
 import {IRenderer} from './renderer';
 import {inject} from '../lib/injector-plus';
 import {MDT} from '../mallet.depedency-tree';
-import {ILibraryService} from '../library.provider';
+import {ILibraryService} from '../core/library.provider';
 import {IWebGLStage} from './webgl-stage';
 import {Logger} from '../lib/logger';
 import bind from 'bind-decorator';

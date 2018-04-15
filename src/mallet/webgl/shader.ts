@@ -1,5 +1,5 @@
 import {IWebGLResource, WebGLResource} from './webgl-resource';
-import {DTO} from '../library.provider';
+import {DTO} from '../core/library.provider';
 import {IWebGLResourceContext} from './webgl-resource-context';
 
 export interface IShader extends IWebGLResource {

@@ -1,6 +1,6 @@
 
-import {inject} from './lib/injector-plus';
-import {MDT} from './mallet.depedency-tree';
+import {inject} from '../lib/injector-plus';
+import {MDT} from '../mallet.depedency-tree';
 import {Logger} from './logger.service';
 import {PriorityQueue} from 'pulsar-lib';
 import bind from 'bind-decorator';

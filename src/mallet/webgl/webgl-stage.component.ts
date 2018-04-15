@@ -1,18 +1,12 @@
 
 import {IAugmentedJQuery, IComponentOptions, IController} from 'angular';
 import {inject, ngAnnotate} from '../lib/injector-plus';
-import {IRenderTargetCtor, RenderTargetWebGL} from '../render-target.factory';
+import {IRenderTargetCtor, RenderTargetWebGL} from '../core/render-target.factory';
 import {IWebGLStage} from './webgl-stage';
 import {Logger} from '../lib/logger';
 import {MDT} from '../mallet.depedency-tree';
-import {Scheduler} from '../scheduler.service';
-import {RenderTargetCtrl} from '../render-target.component';
-import {ILibraryService} from '../library.provider';
-import {IShaderOptions, ShaderDTO} from './shader';
-import {Mesh} from '../geometry/mesh';
-import {Camera, ICamera} from '../geometry/camera';
-import {mat4} from 'gl-matrix';
-import {IRenderer, Renderer} from './renderer';
+import {Scheduler} from '../core/scheduler.service';
+import {RenderTargetCtrl} from '../core/render-target.component';
 
 class WebGLStageCtrl implements IController {
     private type: IRenderTargetCtor = RenderTargetWebGL;

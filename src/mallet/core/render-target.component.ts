@@ -1,6 +1,6 @@
 
-import {inject, ngAnnotate} from './lib/injector-plus';
-import {MDT} from './mallet.depedency-tree';
+import {inject, Logger, ngAnnotate} from '..';
+import {MDT} from '../mallet.depedency-tree';
 import {
     IRenderTarget, IRenderTargetCtor, RenderingContext, RenderTarget2D,
     RenderTargetFactory,
@@ -8,7 +8,6 @@ import {
 import {Scheduler} from './scheduler.service';
 import {element, IAugmentedJQuery, IComponentOptions, IController} from 'angular';
 import bind from 'bind-decorator';
-import {Logger} from './lib/logger';
 
 export class RenderTargetCtrl implements IController {
 
@@ -58,7 +57,7 @@ export class RenderTargetCtrl implements IController {
         // Setup and attach canvas
         const canvas = this.renderTarget.getCanvas();
         canvas.innerHTML = this.NO_SUPPORT_MESSAGE;
-        this.$element.append(canvas);
+        this.$element.find('div').append(canvas);
 
         this.scheduler.schedule(this.update, 0);
         window.addEventListener('resize', this.onResize);
@@ -115,7 +114,7 @@ class RenderTarget2DCtrl extends RenderTargetCtrl {
 
 export const options: IComponentOptions = {
     controller: ngAnnotate(RenderTargetCtrl) as any,
-    template: '<div class="render-target"></div>',
+    template: '<div class="render-target viewport-container"></div>',
     bindings: {
         type: '<',
     },

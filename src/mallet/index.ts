@@ -3,9 +3,9 @@
 export * from './mallet.depedency-tree';
 export * from './lib/logger';
 export * from './lib/injector-plus';
-export * from './render-target.factory';
-export * from './render-target.component';
-export * from './scheduler.service';
+export * from './core/render-target.factory';
+export * from './core/render-target.component';
+export * from './core/scheduler.service';
 
 // geometry
 export * from './geometry/entity';

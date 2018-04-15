@@ -1,6 +1,6 @@
 
 import {IWebGLResource, IWebGLResourceCtor, IWebGLSimpleResourceCtor} from './webgl-resource';
-import {ILibraryService} from '../library.provider';
+import {ILibraryService} from '../core/library.provider';
 import {WebGLMesh} from './webgl-mesh';
 import {Mesh} from '../geometry/mesh';
 import bind from 'bind-decorator';

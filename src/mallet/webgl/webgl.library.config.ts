@@ -1,4 +1,4 @@
-import {LibraryProvider, StaticSource} from '../library.provider';
+import {LibraryProvider, StaticSource} from '../core/library.provider';
 import {MDT} from '../mallet.depedency-tree';
 import {inject} from '../lib/injector-plus';
 import {GLDataType, GLUniformType, IShaderOptions, ShaderDTO, ShaderType} from './shader';

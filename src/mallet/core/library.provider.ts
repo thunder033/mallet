@@ -26,7 +26,11 @@ export interface IAdapterParameters<T> {
     outputTransform?: (result: any) => string | T;
 }
 
-export abstract class DTO<T> {
+/**
+ * The DTO class provides a type-safe wrapper for raw data structures. In the context of
+ * the Library module, it enables importing sources
+ */
+export class DTO<T> {
     constructor(params: {[K in keyof T]: any}) {
         Object.assign(this, params);
     }

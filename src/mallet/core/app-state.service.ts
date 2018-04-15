@@ -1,8 +1,8 @@
-import {inject, ngAnnotate} from './lib/injector-plus';
-import {MDT} from './mallet.depedency-tree';
+import {inject} from '../lib/injector-plus';
+import {MDT} from '../mallet.depedency-tree';
 import {ILocationService} from 'angular';
 import {Logger} from './logger.service';
-import {state, StateMachine} from './lib/state-machine';
+import {state, StateMachine} from '../lib/state-machine';
 
 export class AppState extends StateMachine {
     @state public static Running;

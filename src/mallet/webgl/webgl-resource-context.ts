@@ -1,4 +1,4 @@
-import {IRenderTarget} from '../render-target.factory';
+import {IRenderTarget} from '../core/render-target.factory';
 import {IWebGLResourceFactory} from './webgl-resource-factory';
 import {Logger} from '../lib/logger';
 

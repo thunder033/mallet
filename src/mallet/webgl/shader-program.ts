@@ -3,8 +3,7 @@ import {GLUniformType, IShader, IShaderOptions, IUniformDescription, Shader} fro
 import bind from 'bind-decorator';
 import {IWebGLResource, WebGLResource} from './webgl-resource';
 import {BufferFormat, IBufferFormat} from './buffer-format';
-import {DTO} from '../library.provider';
-import {IWebGLResourceContext} from './webgl-resource-context';
+import {DTO} from '../core/library.provider';
 
 export interface IProgramOptions {
     shaders: {vertex: IShaderOptions, fragment: IShaderOptions};
