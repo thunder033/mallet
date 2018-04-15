@@ -60,6 +60,6 @@
     "pulsar-lib": "github:thunder033/pulsar-lib",
     "reflect-metadata": "^0.1.10",
     "tslint": "^5.7.0",
-    "typescript": "2.5.3"
+    "typescript": "^2.8.1"
   }
 }
