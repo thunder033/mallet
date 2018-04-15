@@ -38,5 +38,5 @@ class WebGLStageCtrl implements IController {
 
 export const webGLStageOptions: IComponentOptions = {
     controller: ngAnnotate(WebGLStageCtrl) as any,
-    template: '<mallet-render-target type="$ctrl.type"></mallet-render-target>',
+    template: '<mallet-render-target class="viewport-container" type="$ctrl.type"></mallet-render-target>',
 };
