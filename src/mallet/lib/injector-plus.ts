@@ -13,9 +13,10 @@ export interface InjectableMethod {
     exec(...args): any;
 }
 
-const injectableMethodName = 'exec';
+const injectableFunctionName = 'exec';
 const providerGet = '$get';
 const annotationKey = Symbol('dependencies');
+const isRestKey = Symbol('isKey');
 
 /**
  * Define the injection annotation for a given angular provider
@@ -25,7 +26,7 @@ const annotationKey = Symbol('dependencies');
 export function inject(identifier: string): ParameterDecorator {
     // tslint:disable-next-line:callable-types
     return function annotation(target: {(...args): any} | Function, key: string, index: number) {
-        if (key && key !== injectableMethodName && key !== providerGet) {
+        if (key && key !== injectableFunctionName && key !== providerGet) {
             throw new TypeError('Dependencies can only be injected on constructor, injectable method executor, or provider');
         } else if (key) {
             target = target.constructor;
@@ -40,12 +41,43 @@ export function inject(identifier: string): ParameterDecorator {
 
 // tslint:disable-next-line:no-namespace
 export namespace inject {
+    // attach the derivations of inject decorator as properties
+    /**
+     * Inject a provider variation during configuration
+     * @param {string} identifier
+     * @returns {ParameterDecorator}
+     */
     export const provider = (identifier: string) => inject(`${identifier}Provider`);
+    /**
+     * Inject a list of annotations for a method
+     * @param {string[]} identifiers
+     * @returns {MethodDecorator}
+     */
+    export const list = (identifiers: string[]): MethodDecorator => {
+        return function listAnnotate(target: (...args) => any | Function, key: string) {
+            logger.verbose(`Inject parameter list for ${target.name || target.constructor.name}`);
+            identifiers.map(inject).forEach((injector, index) => {
+                injector(target, key, index);
+            });
+        };
+    };
+
+    /**
+     * Flag this method as using rest parameters (or arguments) to override function length check at
+     * when annotations are processed
+     * @returns {MethodDecorator}
+     */
+    export const isRest = (): MethodDecorator => {
+        return function  listAnnotate(target: (...args) => any | Function, key: string) {
+            logger.verbose(`Flag ${target.name || target.constructor.name}.${key} as rest function`);
+            Reflect.defineMetadata(isRestKey, true, key ? target[key] : target);
+        };
+    };
 }
 
 /**
  * Annotate an Angular provider definition (ex. with module.provider instead of service, controller, etc.)
- * @param {{new(...args): angular.IServiceProvider}} constructor
+ * @param {{new(): angular.IServiceProvider}} constructor
  */
 export function ngAnnotateProvider(constructor: {new(...args): IServiceProvider}) {
     const provider: IServiceProvider = constructor.prototype;
@@ -73,53 +105,74 @@ export type AnnotatedController = Array<string |  (new (...args: any[]) => ICont
  */
 export function ngAnnotate(provider: IController, baseClass?: Function): AnnotatedController;
 export function ngAnnotate(provider: Function | InjectableMethodCtor, baseClass: Function = null): AnnotatedProvider {
+    logger.verbose(`Annotate ${provider.name} (${baseClass ? baseClass.name : 'self'})`);
     let clazz = baseClass || provider;
     let annotations: string[] = Reflect.getMetadata(annotationKey, clazz) || [];
 
-    // if we didn't find any annotations on the class, look in it's prototype chain
-    if (annotations.length === 0) {
-        do {
-            clazz = Object.getPrototypeOf(clazz);
-            annotations = Reflect.getMetadata(annotationKey, clazz) || [];
-            logger.verbose(`Checking ${clazz.name} for annotations. Found ${annotations.length}`);
-        } while (annotations.length === 0 && clazz.name !== '');
-
-        // reset the class reference to the provider if we didn't find any annotations
-        if (clazz.name === '') {
-            clazz = provider;
-        }
+    // Search the prototype chain for annotations if we didn't find any on the class
+    while (annotations.length === 0 && Object.getPrototypeOf(clazz)) {
+        clazz = Object.getPrototypeOf(clazz); // walks up the prototype chain until it hits null
+        annotations = Reflect.getMetadata(annotationKey, clazz) || [];
+        logger.verbose(`Checking ${clazz.name} for annotations. Found ${annotations.length}`);
     }
 
+    // reset the class reference to the provider if we didn't find any annotations
+    if (!clazz && annotations.length === 0) {
+        clazz = provider;
+    }
+
+    // in the default injection case (e.g. annotating a class), the function to annotate is
+    // simply the constructor and it's name is the class name
     let method = provider;
     let methodName = provider.name;
 
-    if (provider.length === 0 && provider.prototype.hasOwnProperty(injectableMethodName)) {
-        method = provider.prototype[injectableMethodName];
-        methodName += `.${injectableMethodName}`;
+    // Check if we're looking at an "injectable method" - typescript doesn't allow decorators
+    // on plain functions, only classes and class methods. It must have a default constructor
+    // and implemented the pre-defined method name
+    if (provider.length === 0 && provider.prototype[injectableFunctionName]) {
+        method = provider.prototype[injectableFunctionName]; // the method from the prototype
+        methodName += `.${injectableFunctionName}`; // update the name for logging
     }
 
+    // There's no way to know if rest parameters are being used, so the method must be flagged
+    const isRest: boolean = Reflect.getMetadata(isRestKey, method);
     // the number annotations should match either the method length or the base class ctor length
-    if (annotations.length !== method.length && clazz.length !== annotations.length) {
+    if (!isRest && annotations.length !== method.length && clazz.length !== annotations.length) {
         throw new Error(
-            `Annotations are not defined for all dependencies of ${methodName}: 
+            `Annotation mismatch match for dependencies of ${methodName}: 
             expected ${method.length} annotations and found ${annotations.length}`);
     }
 
-    logger.verbose(`Annotated ${annotations.length} dependencies for ${provider.name}`);
+    logger.verbose(`Annotated ${annotations.length} dependencies for ${methodName}`);
+    // Return angular style annotated provider method
     return [...annotations, method];
 }
 
+/**
+ * The Dependency Tree pattern builds a system to minimize stringly-typing of dependency references
+ */
 export interface DepTree {
     [key: string]: string | DepTree;
 }
 
+/**
+ * Traverse through a dependency tree and build descriptive, unique keys to each item in the tree
+ * @param {DepTree} tree
+ * @param {string} module
+ */
 export function buildTree(tree: DepTree, module: string) {
     try {
-        JSON.stringify(tree);
+        JSON.stringify(tree); // a little slow, but easiest way to check if this function will work
     } catch (e) {
         throw new TypeError('Tree object must be serializable to build a valid tree');
     }
 
+    /**
+     * Recursively build and then assign keys to each leaf in the tree
+     * @param node
+     * @param {string} prop
+     * @param {string[]} identifier
+     */
     function traverseNode(node: any, prop: string, identifier: string[]) {
         const value = node[prop];
         if (typeof value === 'string' && !value) {
