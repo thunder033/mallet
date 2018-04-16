@@ -20,6 +20,7 @@ export class Level extends StateMachine {
 export class Logger {
     private loggers: any[];
     private state: Level;
+    private tag: string;
 
     /**
      * @param {string} stack
@@ -47,8 +48,15 @@ export class Logger {
         this.loggers.push({api: logger, level: loggerLevel});
     }
 
-    public config(params: {level: Level}) {
-        this.state.setState(typeof (params.level) !== 'undefined' ? params.level : (this.state.getState() || Level.Error));
+    public config(params: {level?: Level, tag?: string}) {
+        if (typeof params.tag !== 'undefined') {
+            this.tag = params.tag;
+        }
+
+        if (typeof params.level !== 'undefined') {
+            this.info(`Set logging level to ${Level[params.level as any]}`);
+            this.state.setState(typeof (params.level) !== 'undefined' ? params.level : (this.state.getState() || Level.Error));
+        }
     }
 
     public error(message: string);
@@ -106,8 +114,12 @@ export class Logger {
 
     private logOut(args, msgLevel, func) {
         const stack = Error().stack;
-        const trace = Logger.getTrace(stack);
+        let trace = Logger.getTrace(stack);
         const level = this.state.getState();
+
+        if (this.tag) {
+            trace = `[${this.tag}] ${trace}`;
+        }
 
         if (msgLevel > level) {
             return;
