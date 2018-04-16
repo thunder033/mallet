@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import {Level, Logger} from './logger';
-import {IController, IServiceProvider} from 'angular';
+import {IController, IModule, IServiceProvider} from 'angular';
 
 const logger = new Logger();
 logger.config({level: Level.Verbose});
@@ -146,6 +146,30 @@ export function ngAnnotate(provider: Function | InjectableMethodCtor, baseClass:
     logger.verbose(`Annotated ${annotations.length} dependencies for ${methodName}`);
     // Return angular style annotated provider method
     return [...annotations, method];
+}
+
+/**
+ * Execute the {@link InjectableMethod} as a configuration method for the module
+ * @param {angular.IModule} module
+ * @returns {ClassDecorator}
+ * @constructor
+ */
+export function Config(module: IModule): ClassDecorator {
+    return function configureModule(target: Function) {
+        module.config(ngAnnotate(target));
+    };
+}
+
+/**
+ * Execute the {@link InjectableMethod} as a run method for the module
+ * @param {angular.IModule} module
+ * @returns {ClassDecorator}
+ * @constructor
+ */
+export function Run(module: IModule): ClassDecorator {
+    return function runModule(target: Function) {
+        module.run(ngAnnotate(target));
+    };
 }
 
 /**
