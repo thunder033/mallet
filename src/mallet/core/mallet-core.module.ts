@@ -3,7 +3,7 @@ import {ngAnnotate} from '../lib/injector-plus';
 import {renderTargetFactory} from './render-target.factory';
 import {AppState} from './app-state.service';
 import {Scheduler} from './scheduler.service';
-import {Logger} from './logger.service';
+import {MalletLogger} from './logger.service';
 import {options as renderTargetOptions} from './render-target.component';
 import {LibraryProvider} from './library.provider';
 
@@ -16,7 +16,7 @@ malletCore.provider(MDT.Library, ngAnnotate(LibraryProvider));
 
 malletCore.service(MDT.Scheduler, ngAnnotate(Scheduler));
 malletCore.service(MDT.AppState, ngAnnotate(AppState));
-malletCore.service(MDT.Logger, ngAnnotate(Logger));
+malletCore.service(MDT.Logger, ngAnnotate(MalletLogger));
 
 malletCore.factory(MDT.RenderTarget, ngAnnotate(renderTargetFactory));
 

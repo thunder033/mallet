@@ -3,7 +3,7 @@ import {Level, Logger} from './logger';
 import {IController, IModule, IServiceProvider} from 'angular';
 
 const logger = new Logger();
-logger.config({level: Level.Verbose});
+logger.config({level: Level.Verbose, tag: 'injector'});
 
 export interface InjectableMethodCtor {
     new(): InjectableMethod;

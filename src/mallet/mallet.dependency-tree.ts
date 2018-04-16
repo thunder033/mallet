@@ -15,6 +15,7 @@ const MDT = {
         MaxFrameRate: '',
         SampleCount: '',
         ScaleFactor: '',
+        LoggingLevel: '',
     },
     ng: {
         $element: '$element',

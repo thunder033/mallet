@@ -1,9 +1,11 @@
 import {MDT} from './mallet.dependency-tree';
 import angular = require('angular');
 import * as build from './buildVersion.json';
+import {Level} from './lib/logger';
 
 const constants = angular.module('mallet-constants', [])
     .constant(MDT.const.BuildVersion, (build as any).version)
+    .constant(MDT.const.LoggingLevel, Level.Verbose)
 // Rendering
     .constant(MDT.const.ScaleFactor, (() => window.devicePixelRatio || 1)())
     .constant(MDT.const.SampleCount, 1024)
