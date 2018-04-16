@@ -1,7 +1,7 @@
 
 import {mallet} from '../mallet.module';
 import angular = require('angular');
-import {MDT} from '../mallet.depedency-tree';
+import {MDT} from '../mallet.dependency-tree';
 import {webGLStageOptions} from './webgl-stage.component';
 import {WebGLStage} from './webgl-stage';
 import {ngAnnotate} from '../lib/injector-plus';

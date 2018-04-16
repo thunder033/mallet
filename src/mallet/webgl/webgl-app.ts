@@ -2,7 +2,7 @@ import {IAugmentedJQuery, IController, IQService} from 'angular';
 import {ICamera} from '../geometry/camera';
 import {IRenderer} from './renderer';
 import {inject} from '../lib/injector-plus';
-import {MDT} from '../mallet.depedency-tree';
+import {MDT} from '../mallet.dependency-tree';
 import {ILibraryService} from '../core/library.provider';
 import {IWebGLStage} from './webgl-stage';
 import {Logger} from '../lib/logger';

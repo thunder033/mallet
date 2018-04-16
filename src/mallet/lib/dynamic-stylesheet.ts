@@ -1,5 +1,5 @@
 import {IDocumentService} from 'angular';
-import {MDT} from '../mallet.depedency-tree';
+import {MDT} from '../mallet.dependency-tree';
 import * as angular from 'angular';
 import {Logger} from './logger';
 import {CreateFactory} from './create-factory';

@@ -3,7 +3,7 @@
  */
 import {inject, InjectableMethod} from '../lib/injector-plus';
 import {Logger} from './logger.service';
-import {MDT} from '../mallet.depedency-tree';
+import {MDT} from '../mallet.dependency-tree';
 
 export type Image = HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | ImageBitmap;
 export type RenderingContext = CanvasRenderingContext2D | WebGLRenderingContext;

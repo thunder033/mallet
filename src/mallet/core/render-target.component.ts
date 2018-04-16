@@ -1,6 +1,6 @@
 
 import {inject, Logger, ngAnnotate} from '..';
-import {MDT} from '../mallet.depedency-tree';
+import {MDT} from '../mallet.dependency-tree';
 import {
     IRenderTarget, IRenderTargetCtor, RenderingContext, RenderTarget2D,
     RenderTargetFactory,

@@ -1,4 +1,4 @@
-import {MDT} from './mallet.depedency-tree';
+import {MDT} from './mallet.dependency-tree';
 import angular = require('angular');
 import * as build from './buildVersion.json';
 

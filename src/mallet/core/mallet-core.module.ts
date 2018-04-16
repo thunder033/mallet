@@ -1,5 +1,4 @@
-
-import {MDT} from '../mallet.depedency-tree';
+import {MDT} from '../mallet.dependency-tree';
 import {ngAnnotate} from '../lib/injector-plus';
 import {renderTargetFactory} from './render-target.factory';
 import {AppState} from './app-state.service';

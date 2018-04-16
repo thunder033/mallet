@@ -1,7 +1,7 @@
 import {RenderTargetWebGL} from '../core/render-target.factory';
 import {IWebGLResourceFactory, WebGLResourceFactory} from './webgl-resource-factory';
 import {inject} from '../lib/injector-plus';
-import {MDT} from '../mallet.depedency-tree';
+import {MDT} from '../mallet.dependency-tree';
 import {Logger} from '../lib/logger';
 import bind from 'bind-decorator';
 import {IQService} from 'angular';

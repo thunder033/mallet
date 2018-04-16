@@ -4,9 +4,9 @@ import {inject, ngAnnotate} from '../lib/injector-plus';
 import {IRenderTargetCtor, RenderTargetWebGL} from '../core/render-target.factory';
 import {IWebGLStage} from './webgl-stage';
 import {Logger} from '../lib/logger';
-import {MDT} from '../mallet.depedency-tree';
 import {Scheduler} from '../core/scheduler.service';
 import {RenderTargetCtrl} from '../core/render-target.component';
+import {MDT} from '../mallet.dependency-tree';
 
 class WebGLStageCtrl implements IController {
     private type: IRenderTargetCtor = RenderTargetWebGL;

@@ -1,6 +1,6 @@
 
 // core mallet
-export * from './mallet.depedency-tree';
+export * from './mallet.dependency-tree';
 export * from './lib/logger';
 export * from './lib/injector-plus';
 export * from './core/render-target.factory';

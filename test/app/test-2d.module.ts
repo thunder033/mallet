@@ -10,7 +10,7 @@ import {
     RenderTarget2D,
     RenderTargetCtrl,
     Scheduler,
-} from 'mallet';
+} from '../../dist';
 
 const testApp = angular.module('mallet-test', [mallet.name]);
 

@@ -13,7 +13,7 @@ import {
     Renderer,
     ShaderDTO,
     WebGLApp,
-} from 'mallet';
+} from '../../dist';
 
 class ColorCube extends Entity {
     private cubeZ: number;
