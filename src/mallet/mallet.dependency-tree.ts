@@ -4,6 +4,7 @@ const MDT = {
     component: {
         webGLStage: 'malletWebglStage',
         renderTarget: 'malletRenderTarget',
+        debugger: 'malletDebugger',
     },
     config: {
         mallet: '',
@@ -15,6 +16,7 @@ const MDT = {
         MaxFrameRate: '',
         SampleCount: '',
         ScaleFactor: '',
+        BuildVersion: '',
         LoggingLevel: '',
     },
     ng: {
