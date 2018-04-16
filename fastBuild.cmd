@@ -1,4 +1,7 @@
 echo build started
+
+call ts-node .\build\bumpBuildVersion.ts
+
 call del /q dist\*
 call tsc -p .\ || exit /b;
 call dts-generator --project src --out dist/mallet-typings.d.ts

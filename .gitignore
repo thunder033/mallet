@@ -43,3 +43,4 @@ test/**/*.js
 test/**/*.js.map
 .tmp
 *.zip
+buildVersion.json
