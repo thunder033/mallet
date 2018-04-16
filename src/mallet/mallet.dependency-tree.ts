@@ -6,6 +6,7 @@ const MDT = {
         renderTarget: 'malletRenderTarget',
     },
     config: {
+        mallet: '',
         EmbeddedStyles: '',
         Path: '',
     },

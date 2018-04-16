@@ -6,6 +6,10 @@ export * from './lib/injector-plus';
 export * from './core/render-target.factory';
 export * from './core/render-target.component';
 export * from './core/scheduler.service';
+export * from './mallet.config';
+
+// embedded styles
+export {EmbeddedStyle} from './embedded-styles/embedded-styles.library.config';
 
 // geometry
 export * from './geometry/entity';
