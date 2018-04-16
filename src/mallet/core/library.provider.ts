@@ -16,13 +16,41 @@ export interface ISource<T> {
 }
 
 export interface IAdapterParameters<T> {
+    /**
+     * A class or object, or injector identifier (e.g. $http)
+     */
     source: any | string;
+    /**
+     * Retrieval method on the source
+     */
     method: string;
+    /**
+     * A method to execute on successful retrieval, before outputTransform
+     */
     successMethod?: string;
+    /**
+     * If an injector identifier is provided, a list of angular modules to load
+     */
     modules?: string[];
+    /**
+     * Control the fallback order of when the source is called
+     */
     order?: number;
+    /**
+     * Execute the source getter with a callback pattern instead of promise pattern
+     */
     callback?: boolean;
+    /**
+     * Data transform to apply to input parameters to the source
+     * @param {string | number} id
+     * @returns {string | number}
+     */
     inputTransform?: (id: string | number) => string | number;
+    /**
+     * Data transform to apply to the response
+     * @param result
+     * @returns {string}
+     */
     outputTransform?: (result: any) => string | T;
 }
 
@@ -36,10 +64,13 @@ export class DTO<T> {
     }
 }
 
+/**
+ * A library source that has pre-defined (i.e. hard-coded) entries. This should be used for data
+ * collections that have mixed sources (some dynamic entries) or that may be converted to dynamic
+ * sources in the future
+ */
 export class StaticSource<T> implements ISource<T> {
-    constructor(private entries: {[id: string]: T}, private order = 0) {
-
-    }
+    constructor(private entries: {[id: string]: T}, private order = 0) {}
 
     public get(id: string | number): Promise<string | T> {
         return Promise.resolve(this.entries[id]);
@@ -55,18 +86,18 @@ export class StaticSource<T> implements ISource<T> {
 }
 
 /**
- *
+ * The source adapter allows any third-party data source to be ingested into the library
  */
 export class SourceAdapter<T> implements ISource<T> {
     private source: any | string;
-    private method: string;
-    private order: number;
-    private callback: boolean;
-    private successMethod: string;
+    private readonly method: string;
+    private readonly order: number;
+    private readonly callback: boolean;
+    private readonly successMethod: string;
     private modules: string[];
 
-    private inputTransform: (id: string | number) => string | number;
-    private outputTransform: (result: any) => string | T;
+    private readonly inputTransform: (id: string | number) => string | number;
+    private readonly outputTransform: (result: any) => string | T;
 
     constructor(params: IAdapterParameters<T>) {
         this.source = params.source;
@@ -84,10 +115,12 @@ export class SourceAdapter<T> implements ISource<T> {
     }
 
     public get(id: string | number): Promise<T | string> {
+        // if the source is a dependency identifier, load it from the injector
         if (typeof this.source === 'string') {
             this.source = angular.injector(this.modules).get(this.source);
         }
 
+        // if the adapted source has been flagged to use callback pattern
         if (this.callback) {
             return new Promise((resolve) => {
                 this.source[this.method](this.inputTransform(id), resolve);
@@ -128,7 +161,7 @@ export class HttpAdapter<T> extends SourceAdapter<T> {
 class Library<T, P> implements ILibrary<T, P> {
     private sourceIndex: number;
     private id: string | number;
-    private returnDTO: boolean;
+    private readonly returnDTO: boolean;
 
     constructor(
         private ctor: IEntityCtor<T, P>,
@@ -141,7 +174,6 @@ class Library<T, P> implements ILibrary<T, P> {
     }
 
     public get(id: string): Promise<T> {
-        const result = null;
         this.sources.sort((a, b) => a.getOrder() - b.getOrder());
 
         this.sourceIndex = 0;
@@ -222,10 +254,10 @@ export interface ILibraryService {
 }
 
 export class LibraryProvider implements IServiceProvider {
-    private libaries: Map<Function, ILibrary<any, any>>;
+    private libraries: Map<Function, ILibrary<any, any>>;
 
     constructor() {
-        this.libaries = new Map();
+        this.libraries = new Map();
     }
 
     /**
@@ -234,23 +266,23 @@ export class LibraryProvider implements IServiceProvider {
      * @param {Array<ISource<T>>} sources
      */
     public addSources<T, P>(ctor: IEntityCtor<T, P>, sources: Array<ISource<P>>) {
-        if (this.libaries.has(ctor)) {
-            this.libaries.get(ctor).addSources(sources);
+        if (this.libraries.has(ctor)) {
+            this.libraries.get(ctor).addSources(sources);
         } else {
-            this.libaries.set(ctor, new Library(ctor, sources));
+            this.libraries.set(ctor, new Library(ctor, sources));
         }
     }
 
     /**
      * Add a library with sources configured after application setup
-     * @param {any} ctor
-     * @param {Array<ISource<any>>} sources
+     * @param {*} ctor
+     * @param {Array<ISource<*>>} sources
      */
     public addPreparedSources<T>(ctor: {new (...args): T}, sources: Array<ISource<any>>) {
-        if (this.libaries.has(ctor)) {
-            this.libaries.get(ctor).addSources(sources);
+        if (this.libraries.has(ctor)) {
+            this.libraries.get(ctor).addSources(sources);
         } else {
-            this.libaries.set(ctor, new PreparedLibrary(ctor, sources));
+            this.libraries.set(ctor, new PreparedLibrary(ctor, sources));
         }
     }
 
@@ -261,19 +293,19 @@ export class LibraryProvider implements IServiceProvider {
      * @returns {Promise<T>}
      */
     @bind public get<T>(type: Function, id: string | number): Promise<T> {
-        if (!this.libaries.has(type)) {
+        if (!this.libraries.has(type)) {
             throw new ReferenceError(`No sources are configured for ${type.name}`);
         }
 
-        return this.libaries.get(type).get(id);
+        return this.libraries.get(type).get(id);
     }
 
     @bind public getAll<T>(type: Function): Promise<T[]> {
-        if (!this.libaries.has(type)) {
+        if (!this.libraries.has(type)) {
             throw new ReferenceError(`No sources are configured for ${type.name}`);
         }
 
-        return this.libaries.get(type).getAllItems();
+        return this.libraries.get(type).getAllItems();
     }
 
     @bind

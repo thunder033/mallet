@@ -37,7 +37,7 @@ export abstract class Entity extends WebGLResource implements IEntity, IWebGLRes
     public rotateTo: (orientation: vec3 | quat) => void;
 
     protected transform: ITransform;
-    private id: number;
+    private readonly id: number;
     private mesh: WebGLMesh;
 
     public static getIndex(): EntityCollection<IEntity> {
@@ -48,7 +48,7 @@ export abstract class Entity extends WebGLResource implements IEntity, IWebGLRes
         return Entity.updateMethods;
     }
 
-    constructor(private meshName: string) {
+    protected constructor(private meshName: string) {
         super();
         // register entity in the index
         this.id = Entity.curId++;
@@ -66,6 +66,7 @@ export abstract class Entity extends WebGLResource implements IEntity, IWebGLRes
             ? new FastTransform(this.context.transformBuffer, offset)
             : this.transform = new Transform();
 
+        // proxy methods from the transform for easy access
         this.getPosition = this.transform.getPosition.bind(this.transform);
         this.getRotation = this.transform.getRotation.bind(this.transform);
 
@@ -78,10 +79,19 @@ export abstract class Entity extends WebGLResource implements IEntity, IWebGLRes
         this.mesh = resources[this.meshName] as WebGLMesh;
     }
 
+    /**
+     * Scale the entity proportionally by scalar value
+     * @param {number} scalar
+     */
     @bind public scale(scalar: number): void {
         this.transform.scaleBy(scalar, scalar, scalar);
     }
 
+    /**
+     * Operations to perform on each game loop iteration. Base current method is current no-op
+     * @param {number} dt - time elapsed in ms since last update
+     * @param {number} tt - total time elapsed since loop was invoked
+     */
     public update(dt: number, tt: number): void {
         // void
     }
@@ -94,6 +104,9 @@ export abstract class Entity extends WebGLResource implements IEntity, IWebGLRes
         return this.mesh;
     }
 
+    /**
+     * @deprecated Not yet implemented
+     */
     public destroy(): void {
         throw new Error('destroying entities is not supported in current implementation');
     }

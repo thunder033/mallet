@@ -72,6 +72,9 @@ export class ShaderProgram extends WebGLResource implements IShaderProgram {
         return gl[uniform.type].bind(gl, uniform.location);
     }
 
+    /**
+     * Use this program on the context GL instance and apply buffer format
+     */
     public use() {
         this.context.gl.useProgram(this.program);
         this.bufferFormat.apply();

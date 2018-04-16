@@ -5,8 +5,8 @@ import {enumerable} from './decorators';
 
 // tslint:disable:no-shadowed-variable
 class StateListener {
-    private state: number;
-    private callback: Function;
+    private readonly state: number;
+    private readonly callback: Function;
 
     constructor(state: number, callback: Function) {
         this.state = state;
