@@ -33,9 +33,11 @@ export class AppState extends StateMachine {
         }
 
         super.addState(newState);
+        this.logger.verbose(`Add ${newState} to AppState: ${this.getState()}`);
     }
 
     public clearState(): any {
+        this.logger.verbose(`Clear AppState`);
         const debug = this.$location.search().debug === '1' ? AppState.Debug : 0;
         this.setState(AppState.Loading | debug);
         this.removeStateListeners();

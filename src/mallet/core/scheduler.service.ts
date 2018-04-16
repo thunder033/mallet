@@ -98,7 +98,7 @@ export class Scheduler {
         this.startTime = (new Date()).getTime();
         this.lastFrameTime = (new Date()).getTime();
         this.animationFrame = requestAnimationFrame(this.mainLoop);
-        this.appState.setState(AppState.Running);
+        this.appState.addState(AppState.Running);
     }
 
     /**

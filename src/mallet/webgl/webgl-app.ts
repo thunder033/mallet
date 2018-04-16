@@ -9,6 +9,7 @@ import {Logger} from '../lib/logger';
 import bind from 'bind-decorator';
 import {Entity, IEntity} from '../geometry/entity';
 import {IWebGLResourceContext} from './webgl-resource-context';
+import {AppState} from '../core/app-state.service';
 
 export interface IWebGLApp {
     preUpdate?(dt: number, tt: number);
@@ -58,6 +59,7 @@ export abstract class WebGLApp implements IController, IWebGLApp {
     private lastFrameTime: number = 0;
 
     constructor(
+        @inject(MDT.AppState) private appState: AppState,
         @inject(MDT.const.MaxFrameRate) private maxFrameRate: number,
         @inject(MDT.ng.$q) protected $q: IQService,
         @inject(MDT.Library) protected library: ILibraryService,
@@ -177,6 +179,6 @@ export abstract class WebGLApp implements IController, IWebGLApp {
         this.logger.debug('Starting main GL application loop');
         this.lastFrameTime = this.startTime = performance.now();
         this.animationFrame = requestAnimationFrame(this.mainLoop);
-        // this.appState.setState(AppState.Running);
+        this.appState.addState(AppState.Running);
     }
 }
