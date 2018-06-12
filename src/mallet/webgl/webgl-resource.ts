@@ -15,16 +15,34 @@ export interface IWebGLResource {
     init(resourceCache: {[name: string]: IWebGLResource}): void;
 }
 
+/**
+ * Allows application components to inherit the ability to arbitrarily access
+ * to/of WebGL resources without manually passing context
+ */
 export abstract class WebGLResource implements IWebGLResource {
 
+    private static currentGuid = 0; // move to factory possibly?
     private static contexts: Map<string, IWebGLResourceContext> = new Map<string, IWebGLResourceContext>();
 
     protected context: Readonly<IWebGLResourceContext>;
 
+    private guid: number; // uniquely identifies the WebGL resource instance
+
+    /**
+     * Retrieve an indexed WebGL resource context, if it is found
+     * @param {string} name
+     * @returns {IWebGLResourceContext}
+     */
     public static getContext(name: string = 'default'): IWebGLResourceContext {
         return WebGLResource.contexts.get(name);
     }
 
+    /**
+     * Create and index a new WebGL resource context
+     * @param {IWebGLResourceContext} properties
+     * @param {string} name - unique identifier for the new context
+     * @returns {IWebGLResourceContext} - the new created context
+     */
     public static buildContext(properties: IWebGLResourceContext, name: string = 'default'): IWebGLResourceContext {
         if (WebGLResource.contexts.has(name)) {
             throw new Error(`Cannot create WebGLResourceContext "${name}", context with name already exists`);
@@ -37,6 +55,7 @@ export abstract class WebGLResource implements IWebGLResource {
     }
 
     constructor(contextName = 'default') {
+        this.guid = WebGLResource.currentGuid++;
         this.context = Object.freeze(WebGLResource.getContext(contextName));
     }
 

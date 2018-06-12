@@ -3,30 +3,139 @@ import glMatrix = require('gl-matrix');
 
 const {vec3, mat4, quat} = glMatrix;
 
+/**
+ * Provides a structure for the spacial parameters of an object in 3 dimensions, with
+ * methods to modify, access, and utilize this data.
+ *
+ * Methods prefixed with a "v" accept a glMatrix vector (an array), while those without
+ * accept individual component values
+ * @interface
+ */
 export interface ITransform {
+    /**
+     * Get the parent transform
+     * @returns {ITransform} the parent transform instance
+     */
     getParent(): ITransform;
 
+    /**
+     * Translate the transform using the velocity scaled by deltaTime
+     * @param velocity
+     * @param deltaTime
+     * @returns {ITransform} the transform instance
+     */
     vTimeTranslate(velocity: glMatrix.vec3, deltaTime: number): ITransform;
 
+    /**
+     * Set the position of the transform
+     * @param {number} x - new X position value
+     * @param {number} y - new Y position value
+     * @param {number} z - new Z position value
+     * @returns {ITransform} the transform instance
+     */
     setPosition(x: number, y: number, z: number): ITransform;
+
+    /**
+     * Get the position of the transform represented as a vector
+     * @returns {Readonly<glMatrix.vec3>}
+     */
     getPosition(): Readonly<glMatrix.vec3>;
+    /**
+     * Move the transform by the given amount
+     * @param {number} x - delta on X-axis
+     * @param {number} y - delta on Y-axis
+     * @param {number} z - delta on Z-axis
+     * @returns {ITransform} the transform instance
+     */
     translate(x: number, y: number, z: number): ITransform;
+    /**
+     * Translate by vector component values on respective axes
+     * @param {glMatrix.vec3} delta [X, Y, Z]
+     * @returns {ITransform} the transform instance
+     */
     vTranslate(delta: glMatrix.vec3): ITransform;
 
+    /**
+     * Set the scale of the transform on each axis
+     * @param {number} x - new scale value on X-axis
+     * @param {number} y - new scale value on Y-axis
+     * @param {number} z - new scale value on Z-axis
+     * @returns {ITransform}
+     */
     setScale(x: number, y: number, z: number): ITransform;
-    getScale(): Readonly<glMatrix.vec3>;
-    scaleBy(x: number, y: number, z: number): ITransform;
-    vScaleBy(delta: glMatrix.vec3): ITransform;
 
+    /**
+     * Get the scale of the transform represented as a vector
+     * @returns {Readonly<glMatrix.vec3>}
+     */
+    getScale(): Readonly<glMatrix.vec3>;
+
+    /**
+     * Scale the transform by the given amount on each axis
+     * @param {number} x - scalar applied to X-axis
+     * @param {number} y - scalar applied to Y-axis
+     * @param {number} z - scalar applied to Z-axis
+     * @returns {ITransform} the transform instance
+     */
+    scaleBy(x: number, y: number, z: number): ITransform;
+
+    /**
+     * Scale by vector component values on respective axes
+     * @param {glMatrix.vec3} scale value on respective axes [X, Y, Z]
+     * @returns {ITransform} the transform instance
+     */
+    vScaleBy(scale: glMatrix.vec3): ITransform;
+
+    /**
+     * Sets the orientation of the transform derived from the Euler angles (radians) or directly from a quaternion
+     * @param {glMatrix.vec3 | glMatrix.quat} orientation - the new orientation
+     * @returns {ITransform} the transform instance
+     */
     vSetRotation(orientation: glMatrix.quat | glMatrix.vec3): ITransform;
+
+    /**
+     * Create a new orientation from the Euler values in radians
+     * @param {number} yaw - new orientation on X-axis
+     * @param {number} pitch - new orientation on Y-axis
+     * @param {number} roll - new orientation on Z-axis
+     * @returns {ITransform} the transform instance
+     */
     setRotation(yaw: number, pitch: number, roll: number): ITransform;
+
+    /**
+     * Get the orientation of the transform represented as a quaternion
+     * @returns {Readonly<glMatrix.quat>}
+     */
     getRotation(): Readonly<glMatrix.quat>;
+
+    /**
+     * Rotate the transform by the given amount on each Euler axis, units in radians
+     * @param {number} x - orientation delta on X-axis
+     * @param {number} y - orientation delta on Y-axis
+     * @param {number} z - orientation delta on Z-axis
+     * @returns {ITransform} the transform instance
+     */
     rotateBy(x: number, y: number, z: number): ITransform;
+    /**
+     * Rotate the transform by Euler components in the vector
+     * @param {module:gl-matrix.vec3} delta components in radians [X, Y, Z]
+     * @returns {ITransform} the transform instance
+     */
     vRotateBy(delta: glMatrix.vec3): ITransform;
 
+    /**
+     * Get the transform matrix, re-calculating values if transform is dirty
+     * @returns {glMatrix.mat4}
+     */
     getMatrix(): glMatrix.mat4;
 }
 
+/**
+ * Basic implementation of transform class that stores each set of values
+ * in a separate object, marking the resulting matrix as dirty until it is
+ * requested
+ * @implements ITransform
+ */
 export class Transform implements ITransform {
 
     private matrix: glMatrix.mat4;
@@ -41,7 +150,7 @@ export class Transform implements ITransform {
 
     /**
      * Stores and manipulates _position, scale, and rotation data for an object
-     * @param {Transform} [parent=null]
+     * @param {ITransform} [parent=null]
      *
      * @property {Vector3} position
      * @property {Vector3} scale
@@ -63,20 +172,10 @@ export class Transform implements ITransform {
         Object.seal(this);
     }
 
-    /**
-     * Get the parent transform
-     * @returns {ITransform}
-     */
     public getParent(): ITransform {
         return this.parent;
     }
 
-    /**
-     * Translate the transform using the velocity scaled by deltaTime
-     * @param velocity
-     * @param deltaTime
-     * @returns {Transform}
-     */
     public vTimeTranslate(velocity: glMatrix.vec3, deltaTime: number): ITransform {
         const Px = this.position[0] + velocity[0] * deltaTime;
         const Py = this.position[1] + velocity[1] * deltaTime;
@@ -97,13 +196,6 @@ export class Transform implements ITransform {
         return this;
     }
 
-    /**
-     * move the transform by the given amount
-     * @param {number} x
-     * @param {number} [y]
-     * @param {number} [z]
-     * @returns {Transform}
-     */
     public translate(x: number, y: number, z: number): ITransform {
         const Px = this.position[0] + x;
         const Py = this.position[1] + y;
@@ -114,10 +206,6 @@ export class Transform implements ITransform {
         return this;
     }
 
-    /**
-     * Translate by a vector
-     * @param {glMatrix.vec3} delta
-     */
     public vTranslate(delta: glMatrix.vec3): ITransform {
         vec3.add(this.position, this.position, delta);
         this.isDirty = true;
@@ -134,13 +222,6 @@ export class Transform implements ITransform {
         return this;
     }
 
-    /**
-     * scale the transform by the given amount
-     * @param {number|Vector3} x
-     * @param {number} [y]
-     * @param {number} [z]
-     * @returns {Transform}
-     */
     public scaleBy(x, y, z): ITransform {
         const Sx = this.scale[0] * x;
         const Sy = this.scale[1] * y;
@@ -151,11 +232,6 @@ export class Transform implements ITransform {
         return this;
     }
 
-    /**
-     * Scale by vector
-     * @param {glMatrix.vec3} scale
-     * @returns {Transform}
-     */
     public vScaleBy(scale: glMatrix.vec3): ITransform  {
         vec3.multiply(this.scale, this.scale, scale);
         this.isDirty = true;
@@ -183,13 +259,6 @@ export class Transform implements ITransform {
         return this;
     }
 
-    /**
-     * rotate the transform by the given amount
-     * @param {number|Vector3} x
-     * @param {number} [y]
-     * @param {number} [z]
-     * @returns {Transform}
-     */
     public rotateBy(x: number, y: number, z: number): ITransform {
         quat.rotateX(this.rotation, this.rotation, x);
         quat.rotateY(this.rotation, this.rotation, y);
@@ -208,12 +277,8 @@ export class Transform implements ITransform {
         return this;
     }
 
-    /**
-     * Get the transform matrix, re-calculating values if transform is dirty
-     * @returns {glMatrix.mat4}
-     */
     public getMatrix(): glMatrix.mat4 {
-        if (this.isDirty) {
+        if (this.isDirty === true) {
             this.isDirty = false;
             mat4.fromRotationTranslationScaleOrigin(this.matrix, this.rotation, this.position, this.scale, this.origin);
         }

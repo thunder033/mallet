@@ -4,14 +4,25 @@ import glMatrix = require('gl-matrix');
 const {quat, mat4} = glMatrix;
 
 export interface IFastTransform {
+    /**
+     * Returns the offest of this transform in a shared array buffer (as determined during construction)
+     * @returns {number}
+     */
     getOffset(): number;
+
+    /**
+     * This method doe NOT return a 3D Transform matrix, contains in sequence transform
+     * components: position, scale, quaternion rotation, origin
+     * @returns {glMatrix.mat4}
+     */
     getBuffer(): Float32Array;
 }
 
 /**
  * Fast transform is a class designed to either front-load heavy lifting or offload it
  * to the graphics card. This is achieved by creating views of individual transform components
- * on a buffer that can be
+ * on a buffer that can be directly copied to graphics card memory
+ * @implements ITransform, IFastTransform
  */
 export class FastTransform implements ITransform, IFastTransform {
     public static BUFFER_LENGTH = 16;
@@ -55,10 +66,6 @@ export class FastTransform implements ITransform, IFastTransform {
         this.parent = -1; // TODO: implement parenting
     }
 
-    /**
-     * Returns the offest of this transform in a shared array buffer (as determined during construction)
-     * @returns {number}
-     */
     public getOffset(): number {
         return this.offset;
     }
@@ -145,13 +152,6 @@ export class FastTransform implements ITransform, IFastTransform {
         return this;
     }
 
-    /**
-     * rotate the transform by the given amount
-     * @param {number} x
-     * @param {number} [y]
-     * @param {number} [z]
-     * @returns {Transform}
-     */
     public rotateBy(x: number, y: number, z: number): ITransform {
         quat.rotateX(this.rotation, this.rotation, x);
         quat.rotateY(this.rotation, this.rotation, y);
@@ -166,17 +166,12 @@ export class FastTransform implements ITransform, IFastTransform {
         return this;
     }
 
-    /**
-     * This method doe NOT return a 3D Transform matrix, contains in sequence transform
-     * components: position, scale, quaternion rotation, origin
-     * @returns {glMatrix.mat4}
-     */
     public getBuffer() {
         return this.buffer;
     }
 
     /**
-     * Returns 3D transform matrix. Warning: in FastTransform, this is a very slow, creating a new mat4 each time
+     * Returns 3D transform matrix. Warning: in this implementation, this is a very slow, creating a new mat4 each time
      * @returns {glMatrix.mat4}
      */
     public getMatrix(): glMatrix.mat4 {

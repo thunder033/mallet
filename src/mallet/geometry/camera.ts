@@ -72,10 +72,10 @@ export class Camera implements ICamera {
 
     private projectionMatrix: mat4;
     private viewMatrix: mat4;
-    private forward: vec3;
+    private forward: vec3; // direction the camera is facing
 
     private stale: boolean;
-    private up: vec3;
+    private up: vec3; // roll of the camera
     private disp: vec3;
 
     constructor(aspectRatio: number) {
@@ -85,7 +85,7 @@ export class Camera implements ICamera {
         this.viewMatrix = mat4.create();
         this.forward = vec3.fromValues(0, 0, -1);
 
-        this.stale = false;
+        this.stale = false; // if properties of camera changed since the transform was updated
         this.disp = vec3.create();
         this.up = vec3.fromValues(0, 1, 0);
 
@@ -122,6 +122,10 @@ export class Camera implements ICamera {
             100); // far clipping distance
     }
 
+    /**
+     * Move the camera along it's forward vector by distance.
+     * @param {number} distance - how far to move; positive numbers move "forward", negative "backwards"
+     */
     public advance(distance: number): void {
         this.stale = true;
         const position = vec3.clone(this.transform.getPosition() as vec3);
@@ -130,6 +134,10 @@ export class Camera implements ICamera {
         this.transform.setPosition.apply(this.transform, position);
     }
 
+    /**
+     * Move the camera perpendicular to the forward and up vectors (side-to-side)
+     * @param {number} distance - how far to move; positive numbers move "right", negative "left"
+     */
     public strafe(distance: number): void {
         this.stale = true;
         const position = vec3.clone(this.transform.getPosition() as vec3);
@@ -139,6 +147,10 @@ export class Camera implements ICamera {
         this.transform.setPosition.apply(this.transform, position);
     }
 
+    /**
+     * Move the camera long the up vector
+     * @param {number} distance - how far to move; positive numbers move "up", negative "down"
+     */
     public ascend(distance: number): void {
         this.stale = true;
         const position = vec3.clone(this.transform.getPosition() as vec3);
@@ -147,6 +159,11 @@ export class Camera implements ICamera {
         this.transform.setPosition.apply(this.transform, position);
     }
 
+    /**
+     *
+     * @param {number} x
+     * @param {number} y
+     */
     public rotate(x: number, y: number): void {
         this.transform.rotateBy(x, y, 0);
     }
