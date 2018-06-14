@@ -21,28 +21,43 @@ export interface IFastTransform {
 /**
  * Fast transform is a class designed to either front-load heavy lifting or offload it
  * to the graphics card. This is achieved by creating views of individual transform components
- * on a buffer that can be directly copied to graphics card memory
+ * on a buffer that can be directly copied to graphics card memory, where the actual transform
+ * matrix can be calculated. The CPU only has to handle the simple calculations of updating
+ * the transform vector components.
  * @implements ITransform, IFastTransform
  */
 export class FastTransform implements ITransform, IFastTransform {
-    public static BUFFER_LENGTH = 16;
-    public static FAST_TRANSFORM_FLAG = -1;
-    private buffer: Float32Array; // 13 components
+    public static readonly BUFFER_LENGTH = 16;
+    public static readonly FAST_TRANSFORM_FLAG = -1;
+    private readonly buffer: Float32Array; // 13 components
 
-    // component; size, position
-    private scale: glMatrix.vec3; // 3, 0
-    private position: glMatrix.vec3; // 3, 3
-    private rotation: glMatrix.quat; // 4, 6
-    private origin: glMatrix.vec3; // 3, 10
+    // views of the buffer the hold each component
+    private readonly scale: glMatrix.vec3; // 3, 0
+    private readonly position: glMatrix.vec3; // 3, 3
+    private readonly rotation: glMatrix.quat; // 4, 6
+    private readonly origin: glMatrix.vec3; // 3, 10
 
     private parent: number; // position in the global buffer of the parent transform
 
     /**
      * Accepts an array buffer and position within that buffer to store data
      * @param {ArrayBuffer} buffer
-     * @param {number} offset bytes fast transform is offset from the start of the buffer
+     * @param {number} [offset] bytes fast transform is offset from the start of the buffer
      */
     constructor(buffer: ArrayBuffer, private offset: number = 0) {
+        /*
+        The buffer is arranged with each set of components adjacent in the following order:
+
+            Scale     Position  Rotation     Origin    Parent Flag
+            [S][S][S] [P][P][P] [R][R][R][R] [O][O][O] [P] [] [F]
+            0         3         6            10        13  14 15
+
+        Each element is one byte holding a 32-bit float, with a up 16 elements allocated for
+        each transform, totalling a maximum 128 bytes. The current implementation utilizes
+        13 elements, with index 13 planned for parenting, index 14 unused, and index 15 as a
+        special flag to indicate the buffer holds a fast transform data set (instead of 4x4
+        matrix)
+        */
         const byteSize = FastTransform.BUFFER_LENGTH * Float32Array.BYTES_PER_ELEMENT;
         // still use 16 so the memory is cross-compatible with normal transform matrix
         const arrayBuffer = buffer || new ArrayBuffer(byteSize);
@@ -63,6 +78,7 @@ export class FastTransform implements ITransform, IFastTransform {
         this.origin = new Float32Array(arrayBuffer, originPos, 3) as glMatrix.vec3;
         this.origin.set([0, 0, 0]);
 
+        // This will be a pointer to the position of the parent transform in the buffer
         this.parent = -1; // TODO: implement parenting
     }
 

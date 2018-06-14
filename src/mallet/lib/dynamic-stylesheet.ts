@@ -8,6 +8,9 @@ export interface IDynamicStylesheet {
     attach(): void;
 }
 
+/**
+ * Attaches stylesheet created from dynamically loaded sources to the document
+ */
 export class DynamicStylesheet implements IDynamicStylesheet {
     constructor(
         private src: string,

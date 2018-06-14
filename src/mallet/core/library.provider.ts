@@ -183,7 +183,7 @@ class Library<T, P> implements ILibrary<T, P> {
 
     /**
      * Retrieve all items from each source, and aggregate items to a single array
-     * @returns {Promise<T[]>}
+     * @returns {Promise<*[]>}
      */
     public getAllItems(): Promise<T[]> {
         return Promise.all(this.sources.map((source) => source.getAll()))
@@ -195,7 +195,7 @@ class Library<T, P> implements ILibrary<T, P> {
     /**
      * Transform the DTO or string into an entity
      * @param {Object | string} result
-     * @returns {T}
+     * @returns {*}
      */
     @bind protected processResult(result: object | string): T {
         if (result === null || result === '') {
@@ -209,8 +209,8 @@ class Library<T, P> implements ILibrary<T, P> {
 
     /**
      * Recurse through each source, only calling a source if the previous return no result or failed
-     * @param result
-     * @returns {Promise<string | T>}
+     * @param [result] result retrieved from higher priority source
+     * @returns {Promise<string | *>}
      */
     @bind private fallbackGet(result): Promise<T | string> {
         if (!result) {

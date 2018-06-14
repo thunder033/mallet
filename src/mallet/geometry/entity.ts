@@ -8,6 +8,12 @@ import bind from 'bind-decorator';
 
 export interface IEntity {
     getTransform(): ITransform;
+
+    /**
+     * Operations to perform on each game loop iteration. Base current method is current no-op
+     * @param {number} dt - time elapsed in ms since last update
+     * @param {number} tt - total time elapsed since loop was invoked
+     */
     update?(dt: number, tt: number): void;
     getMesh(): IWebGLMesh;
 
@@ -16,6 +22,11 @@ export interface IEntity {
 
     rotate(rotation: vec3): void;
     translate(translation: vec3): void;
+
+    /**
+     * Scale the entity proportionally on all axes by scalar value
+     * @param {number} scalar
+     */
     scale(scalar: number): void;
 
     rotateTo(orientation: vec3 | quat): void;
@@ -24,6 +35,10 @@ export interface IEntity {
 
 export type EntityCollection<T> = T[];
 
+/**
+ * @implements IEntity, IWebGlResources
+ * @extends WebGLResource
+ */
 export abstract class Entity extends WebGLResource implements IEntity, IWebGLResource {
 
     private static curId = 0;
@@ -79,19 +94,10 @@ export abstract class Entity extends WebGLResource implements IEntity, IWebGLRes
         this.mesh = resources[this.meshName] as WebGLMesh;
     }
 
-    /**
-     * Scale the entity proportionally by scalar value
-     * @param {number} scalar
-     */
     @bind public scale(scalar: number): void {
         this.transform.scaleBy(scalar, scalar, scalar);
     }
 
-    /**
-     * Operations to perform on each game loop iteration. Base current method is current no-op
-     * @param {number} dt - time elapsed in ms since last update
-     * @param {number} tt - total time elapsed since loop was invoked
-     */
     public update(dt: number, tt: number): void {
         // void
     }

@@ -10,6 +10,7 @@ export type ICommand = (deltaTime: number, totalTime: number) => void;
 
 /**
  * Executes and monitors the engine loop
+ * @deprecated This is now replaced with the new App-classes, ex. {@link WebGLApp}
  */
 export class Scheduler {
     private updateOperations: PriorityQueue;
@@ -75,8 +76,7 @@ export class Scheduler {
         window.addEventListener('blur', this.suspend);
     }
 
-    @bind
-    public suspend(e: Event) {
+    @bind public suspend(e: Event) {
         if (!(e && e.type === 'blur' && this.suspendOnBlur === false)) {
             this.appState.setState(AppState.Suspended);
             cancelAnimationFrame(this.animationFrame);
@@ -84,8 +84,7 @@ export class Scheduler {
         }
     }
 
-    @bind
-    public resume() {
+    @bind public resume() {
         if (this.appState.is(AppState.Suspended)) {
             this.startMainLoop();
         }

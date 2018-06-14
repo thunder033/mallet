@@ -9,16 +9,39 @@ export type Image = HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | Im
 export type RenderingContext = CanvasRenderingContext2D | WebGLRenderingContext;
 
 enum CanvasContext {
-    basic = '2d',
+    basic = '2d', // this only not "2d" because enum keys can't start with a number
     webgl = 'webgl',
     webglExperimental = 'webgl-experimental',
 }
 
 export interface IRenderTarget {
+    /**
+     * Get the canvas rendering context
+     * @returns {CanvasRenderingContext2D | WebGLRenderingContext}
+     */
     getContext(): CanvasRenderingContext2D | WebGLRenderingContext;
+
+    /**
+     * Get the raw canvas element
+     * @returns {HTMLCanvasElement}
+     */
     getCanvas(): HTMLCanvasElement;
+
+    /**
+     * Adjust the pixel-density of the canvas; does change the size of the canvas element
+     * @param {number} scale
+     */
     resize(scale?: number);
+
+    /**
+     * Clear all image data drawn on the canvas
+     */
     clear();
+
+    /**
+     * Get the width-to-height aspect ratio of the canvas as drawn
+     * @returns {number}
+     */
     getAspectRatio(): number;
 }
 
@@ -27,6 +50,11 @@ export interface IRenderTargetOptions {
     height: number;
 }
 
+/**
+ * Manages the life cycle of a canvas; is agnostic to the render method
+ * utilized for the canvas.
+ * @implements IRenderTarget
+ */
 export abstract class RenderTarget implements IRenderTarget {
     protected ctx: RenderingContext;
     protected canvas: HTMLCanvasElement;
@@ -45,6 +73,10 @@ export abstract class RenderTarget implements IRenderTarget {
 
     public abstract clear();
 
+    /**
+     * Create and configure a new drawing context of the appropriate type
+     * @returns {RenderingContext}
+     */
     protected abstract getNewContext(): RenderingContext;
 
     public getContext(): RenderingContext {
@@ -56,8 +88,9 @@ export abstract class RenderTarget implements IRenderTarget {
     }
 
     public resize(scale: number = 1) {
+        // TODO: this needs to support different stretch modes
         this.logger.debug(`resize ${this.canvas.id || this.canvas.className} to ${scale}`);
-        // finally query the various pixel ratios
+        // query the possible pixel ratio properties to determine canvas pixel density
         const devicePixelRatio = window.devicePixelRatio || 1;
         const backingStoreRatio = (this.ctx as any).webkitBackingStorePixelRatio ||
             (this.ctx as any).mozBackingStorePixelRatio ||
@@ -79,6 +112,11 @@ export abstract class RenderTarget implements IRenderTarget {
     }
 }
 
+/**
+ * RenderTarget configured for usage with 2d canvas drawing context
+ * @extends RenderTarget
+ * @implements IRenderTarget
+ */
 export class RenderTarget2D extends RenderTarget {
     protected ctx: CanvasRenderingContext2D;
 
@@ -96,6 +134,11 @@ export class RenderTarget2D extends RenderTarget {
     }
 }
 
+/**
+ * RenderTarget configured for usage with WebGL canvas drawing context
+ * @extends RenderTarget
+ * @implements IRenderTarget
+ */
 export class RenderTargetWebGL extends RenderTarget {
     protected ctx: WebGLRenderingContext;
 
@@ -116,6 +159,10 @@ export class RenderTargetWebGL extends RenderTarget {
         return gl;
     }
 
+    /**
+     * Determines if WebGL is supported in the current browser
+     * @returns {boolean}
+     */
     private isWebGLSupported(): boolean {
         try {
             const canvas = document.createElement('canvas');
@@ -127,10 +174,22 @@ export class RenderTargetWebGL extends RenderTarget {
 }
 
 export interface IRenderTargetCtor {new (...args): IRenderTarget; }
+
+/**
+ * @function RenderTargetFactory
+ * Creates a new {@link IRenderTarget} instance of the given constructor
+ * @param {IRenderTargetCtor} ctor - the type of render target to create
+ * @param {IRenderTargetOptions} options - parameters to pass to the render target
+ * @return {IRenderTarget} the created render target
+ *
+ * @example
+ * const width = 100;
+ * const height = 100;
+ * const renderTarget = renderTargetFactory(RenderTargetWebGL, {width, height});
+ */
 export type RenderTargetFactory = <T extends IRenderTarget>(ctor: {new(...args): T}, options: IRenderTargetOptions) => T;
 
-// tslint:disable-next-line:class-name
-export class renderTargetFactory implements InjectableMethod {
+export class renderTargetFactory implements InjectableMethod { // tslint:disable-line:class-name
     public exec(@inject(MDT.Logger) logger: Logger) {
         return <T extends RenderTarget>(ctor: {new(...args): T}, options: IRenderTargetOptions): T => {
             return new ctor(options, logger) as T;

@@ -9,16 +9,28 @@ import {Scheduler} from './scheduler.service';
 import {element, IAugmentedJQuery, IComponentOptions, IController} from 'angular';
 import bind from 'bind-decorator';
 
+/**
+ * Creates, configures and provides DI access to a managed canvas instance for usage as a render target
+ * @implements IController
+ */
 export class RenderTargetCtrl implements IController {
 
     protected scale: number = 1;
     protected renderTarget: IRenderTarget;
     protected ctx: RenderingContext;
 
-    private type: IRenderTargetCtor;
+    private type: IRenderTargetCtor;  // sub-class of the render target, currently RenderTarget2D or RenderTargetWebGL
 
     private readonly NO_SUPPORT_MESSAGE = 'Your browser does not support canvas. Please consider upgrading.';
 
+    /**
+     * This method can only be called in {@link angular.IController.$postLink} hook or later in the Angular lifecycle.
+     * Retrieves the {@link RenderTargetCtrl} for the render target element, allowing access to the {@link RenderTarget}
+     * instance. A {@link ReferenceError} will be thrown if controller retrieval fails.
+     *
+     * @param {angular.IAugmentedJQuery} $element - linked render target element
+     * @returns {RenderTargetCtrl} - associated controller
+     */
     public static getController($element: IAugmentedJQuery): RenderTargetCtrl {
         // https://stackoverflow.com/questions/21995108/angular-get-controller-from-element
         const targetTag = 'mallet-render-target';
@@ -75,8 +87,7 @@ export class RenderTargetCtrl implements IController {
         return this.renderTarget;
     }
 
-    @bind
-    protected update(): void {
+    @bind protected update(): void {
         const lowResScale = 0.75;
         // Reduce canvas resolution is performance is bad
         if (this.scheduler.FPS < 30 && this.scale === 1) {
@@ -90,8 +101,8 @@ export class RenderTargetCtrl implements IController {
         this.scheduler.draw(() => this.renderTarget.clear(), -1);
     }
 
-    @bind
-    private onResize() {
+    @bind private onResize() {
+        // ensure the canvas is scaled appropriately to it's container
         this.renderTarget.resize(this.scale);
     }
 }

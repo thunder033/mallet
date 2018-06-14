@@ -5,7 +5,7 @@ import bind from 'bind-decorator';
 export interface ICamera {
     /**
      * Get normalized heading for the direction the camera is facing
-     * @returns {}
+     * @returns {glMatrix.vec3}
      */
     getForward(): vec3;
 
@@ -24,26 +24,26 @@ export interface ICamera {
 
     /**
      * Move forward along the heading vector (local Z axis)
-     * @param {number} distance
+     * @param {number} distance - how far to move; positive numbers move "forward", negative "backwards"
      */
     advance(distance: number): void;
 
     /**
      * Move to the side, along the local X axis
-     * @param {number} distance
+     * @param {number} distance - how far to move; positive numbers move "right", negative "left"
      */
     strafe(distance: number): void;
 
     /**
      * Move up/down, along the world Y axis
-     * @param {number} distance
+     * @param {number} distance - how far to move; positive numbers move "up", negative "down"
      */
     ascend(distance: number): void;
 
     /**
      * Rotate from local Euler angles, specified in radians
-     * @param {number} x
-     * @param {number} y
+     * @param {number} x - X-axis rotation in radians
+     * @param {number} y - Y-axis rotation in radians
      */
     rotate(x: number, y: number): void;
 
@@ -55,17 +55,21 @@ export interface ICamera {
 
     /**
      * Get the current view matrix
-     * @returns {}
+     * @returns {glMatrix.mat4}
      */
     getViewMatrix(): mat4;
 
     /**
      * Get the current projection matrix
-     * @returns {}
+     * @returns {glMatrix.mat4}
      */
     getProjectionMatrix(): mat4;
 }
 
+/**
+ * Basic camera implementation
+ * @implements ICamera
+ */
 export class Camera implements ICamera {
     private aspectRatio: number;
     private transform: ITransform;
@@ -122,10 +126,6 @@ export class Camera implements ICamera {
             100); // far clipping distance
     }
 
-    /**
-     * Move the camera along it's forward vector by distance.
-     * @param {number} distance - how far to move; positive numbers move "forward", negative "backwards"
-     */
     public advance(distance: number): void {
         this.stale = true;
         const position = vec3.clone(this.transform.getPosition() as vec3);
@@ -134,10 +134,6 @@ export class Camera implements ICamera {
         this.transform.setPosition.apply(this.transform, position);
     }
 
-    /**
-     * Move the camera perpendicular to the forward and up vectors (side-to-side)
-     * @param {number} distance - how far to move; positive numbers move "right", negative "left"
-     */
     public strafe(distance: number): void {
         this.stale = true;
         const position = vec3.clone(this.transform.getPosition() as vec3);
@@ -147,10 +143,6 @@ export class Camera implements ICamera {
         this.transform.setPosition.apply(this.transform, position);
     }
 
-    /**
-     * Move the camera long the up vector
-     * @param {number} distance - how far to move; positive numbers move "up", negative "down"
-     */
     public ascend(distance: number): void {
         this.stale = true;
         const position = vec3.clone(this.transform.getPosition() as vec3);
@@ -159,11 +151,6 @@ export class Camera implements ICamera {
         this.transform.setPosition.apply(this.transform, position);
     }
 
-    /**
-     *
-     * @param {number} x
-     * @param {number} y
-     */
     public rotate(x: number, y: number): void {
         this.transform.rotateBy(x, y, 0);
     }
