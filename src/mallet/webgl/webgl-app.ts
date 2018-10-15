@@ -13,9 +13,38 @@ import {AppState} from '../core/app-state.service';
 import {Debugger} from '../debugger';
 
 export interface IWebGLApp {
+    /**
+     * Invoked on each frame before the update call of each entity is called
+     * @param {number} dt
+     * @param {number} tt
+     */
     preUpdate?(dt: number, tt: number);
+
+    /**
+     * The postUpdate method can perform any operations between entity updates and rendering
+     * @param {number} dt
+     * @param {number} tt
+     */
     postUpdate?(dt: number, tt: number);
+
+    /**
+     * Triggered when an unhandled exception occurs within the app life cycle
+     * @param {Error} err
+     */
+    onError(err: Error);
+
+    /**
+     * The init method is executed during the $postLink phase, providing full access to the
+     * render target
+     * @param {IWebGLResourceContext} context
+     * @returns {*}
+     */
     init(context: IWebGLResourceContext): any;
+
+    /**
+     * The config method is executed during construction, and before the component is linked
+     * to the render target element - during Angular's config phase.
+     */
     config(): void;
 
     postRender?(dt: number, tt: number);
@@ -23,6 +52,9 @@ export interface IWebGLApp {
 
 export type UpdateMethod = (dt: number, tt: number) => void;
 
+/**
+ * @implements IWebGLApp
+ */
 export abstract class WebGLApp implements IController, IWebGLApp {
     public preUpdate: UpdateMethod = null;
 
@@ -44,6 +76,7 @@ export abstract class WebGLApp implements IController, IWebGLApp {
     /** @description frames executed in last second */
     private framesThisSecond: number = 0;
 
+    // TODO: re-implement this
     /** @description suspend main loop if the window loses focus */
     private suspendOnBlur: boolean = false;
 
@@ -60,6 +93,10 @@ export abstract class WebGLApp implements IController, IWebGLApp {
 
     /** @description timestamp of the last frame */
     private lastFrameTime: number = 0;
+
+    // public static malletAppComponent(ctor: new () => IWebGLApp) {
+    //
+    // }
 
     protected constructor(
         @inject(MDT.AppState) private appState: AppState,
@@ -158,7 +195,7 @@ export abstract class WebGLApp implements IController, IWebGLApp {
             this.deltaTime -= this.timestep;
             elapsedMs += dtMs;
 
-            const maxConsecSteps = 240;
+            const maxConsecSteps = 240; // TODO: make this configurable
             if (++updateSteps > maxConsecSteps) {
                 this.logger.warn(`Update Loop Exceeded ${maxConsecSteps} Calls`);
                 this.deltaTime = 0; // don't do a silly # of updates

@@ -26,7 +26,7 @@ export class Logger {
      * @param {string} stack
      * @param {number} [calls=0]
      */
-    private static getTrace(stack, calls = 0) {
+    private static getTrace(stack: string, calls: number = 0) {
         const call = stack
             .split('\n')[calls + 3]
             .split(' at ').pop();
@@ -37,11 +37,12 @@ export class Logger {
         return `(${method}:${file}`;
     }
 
-    constructor() {
+    constructor(params: {level?: Level, tag?: string} = {}) {
         this.state = new Level();
         this.state.setState(Level.Info);
         // add console logger by default
         this.loggers = [{level: Level.Verbose, api: console}];
+        this.config(params);
     }
 
     public addLogger(logger, loggerLevel) {

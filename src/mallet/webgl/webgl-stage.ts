@@ -27,7 +27,7 @@ export class WebGLStage implements IWebGLStage {
     private glFactory: WebGLResourceFactory;
     private context: IWebGLResourceContext;
 
-    private programs: {[name: string]: IShaderProgram};
+    private readonly programs: {[name: string]: IShaderProgram};
 
     constructor(
         @inject(MDT.Library) private library: ILibraryService,

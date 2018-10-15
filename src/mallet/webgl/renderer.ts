@@ -2,8 +2,8 @@ import {Entity, IEntity} from '../geometry/entity';
 import {ICamera} from '../geometry/camera';
 import {WebGLResource} from './webgl-resource';
 import {GLMatrixSetter} from './shader';
-import {mat4} from 'gl-matrix';
 import {IShaderProgram} from './shader-program';
+import {Debugger} from '../debugger/debugger.service';
 import bind from 'bind-decorator';
 
 export interface IRenderer {
@@ -29,6 +29,9 @@ export class Renderer extends WebGLResource implements IRenderer {
     protected activeProgram: IShaderProgram;
     protected entities: IEntity[];
 
+    @Debugger.watch('Rendered Entities') private frameEntityCount: number;
+    @Debugger.watch('Rendered Verts') private frameVertexCount: number;
+
     constructor(options: IRendererOptions) {
         super();
 
@@ -48,12 +51,19 @@ export class Renderer extends WebGLResource implements IRenderer {
         const entities = this.entities;
         const len = entities.length;
         const render = this.renderEntity;
+        this.frameVertexCount = 0;
         // tslint:disable-next-line:prefer-for-of
         for (let i = 0; i < len; i++) {
             render(entities[i]);
         }
+
+        this.frameEntityCount = len;
     }
 
+    /**
+     * Draws a single entity to the scene, to be invoked on each frame
+     * @param entity
+     */
     @bind public renderEntity(entity: IEntity): void {
         const {gl} = this.context;
         const mesh = entity.getMesh();
@@ -70,9 +80,11 @@ export class Renderer extends WebGLResource implements IRenderer {
         const matrix = entity.getTransform().getMatrix();
         // console.log(matrix);
         this.setWorldMatrix(false, matrix);
+        const vertexCount = mesh.getVertexCount();
 
         // perform the draw call
-        gl.drawElements(gl.TRIANGLES, mesh.getVertexCount(), gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(gl.TRIANGLES, vertexCount, gl.UNSIGNED_SHORT, 0);
+        this.frameVertexCount += vertexCount;
     }
 
     /**

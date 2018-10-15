@@ -14,7 +14,7 @@ export enum GLDataType {
     SHORT = 'SHORT',
     UNSIGNED_SHORT = 'UNSIGNED_SHORT',
     UNSIGNED_BYTE = 'UNSIGNED_BYTE',
-    HALF_FLOAT = 'HALF_FLOAT', // future proof for webgl 2
+    HALF_FLOAT = 'HALF_FLOAT', // future-proof for webgl 2
 }
 
 export interface IAttribDescription {
@@ -26,6 +26,34 @@ export interface IAttribDescription {
     type: GLDataType;
 }
 
+/**
+ * Enumeration of supported possible uniform types that may be set on uniform buffers,
+ * corresponding to {@link WebGLRenderingContext} functions
+ * Docs from: https://webglfundamentals.org/webgl/lessons/webgl-shaders-and-glsl.html#uniforms
+ *
+ * @enum {string}
+ * @property uniform1f - float value: v
+ * @property uniform1fv - float or float array: v or [v]
+ * @property uniform2f - vec2: v0, v1
+ * @property uniform2fv - vec2 or vec2 array: [v0, v1]
+ * @property uniform3f - vec3: v0, v1, v2
+ * @property uniform3fv - vec3 or vec3 array: [v0, v1, v2]
+ * @property uniform4f - vec4: v0, v1, v2, v3
+ * @property uniform4fv - vec4 or vec4 array: [v0, v1, v2, v3]
+ *
+ * @property uniformMatrix2fv - mat2 or mat2 array: [ 4x element array]
+ * @property uniformMatrix3fv - mat3 or mat3 array: [ 9x element array]
+ * @property uniformMatrix4fv - mat4 or mat4 array: [ 16x element array]
+ *
+ * @property uniform1i - for int: v
+ * @property uniform1iv - for int or int array: [v]
+ * @property uniform2i - for ivec2: v0, v1
+ * @property uniform2iv - for ivec2 or ivec2 array: [v0, v1]
+ * @property uniform3i - for ivec3: v0, v1, v2
+ * @property uniform3iv - for ivec3 or ivec3 array: [v0, v1, v2]
+ * @property uniform4i - for ivec4: v0, v1, v2, v3
+ * @property uniform4iv - for ivec4 or ivec4 array: [v0, v1, v2, v3]
+ */
 export enum GLUniformType {
     uniform1f = 'uniform1f',
     uniform1fv = 'uniform1fv',

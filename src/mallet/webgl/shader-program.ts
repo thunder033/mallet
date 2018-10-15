@@ -66,9 +66,18 @@ export class ShaderProgram extends WebGLResource implements IShaderProgram {
             config.shaders.fragment.spec.uniforms || {}]);
     }
 
+    /**
+     * Return a curried function to set data for the uniform in the buffer
+     * @param {string} name - name a uniform defined in shader space
+     * @returns {(data: any) => void}
+     */
     public getUniformSetter(name: string): (data: any) => void {
         const {gl} = this.context;
         const uniform = this.uniforms[name];
+        if (!uniform) {
+            throw new ReferenceError(`Uniform ${name} is not defined in program shader specs.`);
+        }
+
         return gl[uniform.type].bind(gl, uniform.location);
     }
 
@@ -89,15 +98,18 @@ export class ShaderProgram extends WebGLResource implements IShaderProgram {
         gl.deleteProgram(this.program);
     }
 
-    @bind
-    protected createShader(config: IShaderOptions): IShader {
+    @bind protected createShader(config: IShaderOptions): IShader {
         return this.context.factory.create(Shader, config);
     }
 
+    /**
+     * Parse uniform spec to retrieve and cache uniform locations, generating flat keys for structs
+     * @param {IUniformDescription[]} spec
+     */
     private cacheUniforms(spec: IUniformDescription[]) {
         const {gl} = this.context;
         spec.forEach((uniforms) => {
-            this.flattenUniforms(uniforms).forEach((namePcs) => {
+            this.flattenUniformStructs(uniforms).forEach((namePcs) => {
                 const name = namePcs.join('.');
                 const location = gl.getUniformLocation(this.program, name);
                 const type = this.getUniformType(uniforms, namePcs);
@@ -107,7 +119,7 @@ export class ShaderProgram extends WebGLResource implements IShaderProgram {
         });
     }
 
-    private flattenUniforms(struct: IUniformDescription, keys: string[][] = [], pieces: string[] = []): string[][] {
+    private flattenUniformStructs(struct: IUniformDescription, keys: string[][] = [], pieces: string[] = []): string[][] {
         if (!struct) {
             return;
         }
@@ -122,7 +134,7 @@ export class ShaderProgram extends WebGLResource implements IShaderProgram {
             if (GLUniformType[type as GLUniformType]) {
                 keys.push([...pieces, prop]);
             } else { // Struct -> flatten ( struct, keys, pieces + prop
-                this.flattenUniforms(type as IUniformDescription, keys, [...pieces, prop]);
+                this.flattenUniformStructs(type as IUniformDescription, keys, [...pieces, prop]);
             }
         });
 

@@ -87,6 +87,7 @@ export class RenderTargetCtrl implements IController {
         return this.renderTarget;
     }
 
+    // TODO: re-enable this behavior (that depends on deprecated scheduler)
     @bind protected update(): void {
         const lowResScale = 0.75;
         // Reduce canvas resolution is performance is bad

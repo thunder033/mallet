@@ -5,6 +5,7 @@ const MDT = {
         webGLStage: 'malletWebglStage',
         renderTarget: 'malletRenderTarget',
         debugger: 'malletDebugger',
+        webGLApp: 'malletWebglApp',
     },
     config: {
         mallet: '',

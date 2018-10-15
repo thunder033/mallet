@@ -7,7 +7,8 @@ import glMatrix = require('gl-matrix');
 
 const {vec3} = glMatrix;
 
-// this kinda sucks but it's the only way to some reasonably have access to this data...
+// this kinda sucks but it's the only way to reasonably have access to this data without
+// a server or build process to package it
 const embeddedShaders = {
     // language=GLSL
     vertexShader3d: `#version 100

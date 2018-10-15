@@ -1,4 +1,4 @@
-import * as angular from 'angular';
+import angular = require('angular');
 import {StylesheetFactory} from '../lib/dynamic-stylesheet';
 import {MDT} from '../mallet.dependency-tree';
 import {inject, InjectableMethod, ngAnnotate, Run} from '../';

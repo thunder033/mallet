@@ -70,7 +70,7 @@ export abstract class Entity extends WebGLResource implements IEntity, IWebGLRes
         Entity.index[this.id] = this;
 
         if (this.update !== Entity.prototype.update) {
-            this.context.logger.debug(`Add entity update method for entity with mesh ${meshName}`);
+            this.context.logger.debug(`Add entity update method for ${this.constructor.name}#${this.id} with mesh ${meshName}`);
             Entity.updateMethods.push(this.update.bind(this));
         }
 

@@ -18,7 +18,6 @@ class WebGLStageCtrl implements IController {
 
     constructor(
         @inject(MDT.webgl.WebGLStage) private stage: IWebGLStage,
-        @inject(MDT.Scheduler) private scheduler: Scheduler,
         @inject(MDT.ng.$element) private $element: IAugmentedJQuery,
         @inject(MDT.Logger) private logger: Logger) {
         this.logger.info('Build WebGL Stage');
