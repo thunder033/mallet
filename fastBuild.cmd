@@ -1,6 +1,7 @@
 echo build started
 
-call ts-node .\build\bumpBuildVersion.ts
+for /f %%i in ('call ts-node .\build\bumpBuildVersion.ts') do set VER=%%i
+echo %VER%
 
 call del /q dist\*
 call tsc -p .\ || exit /b;
@@ -12,6 +13,7 @@ call browserify -d --im --noparse=D:\git\mallet\node_modules\angular\angular.min
 
 @echo {>> dist/package.json
 @echo "name":"mallet-dev",>> dist/package.json
-@echo "version": "0.0.1">> dist/package.json
+@echo "version": "0.0.%VER%">> dist/package.json
 @echo }>> dist/package.json
+
 echo build finished

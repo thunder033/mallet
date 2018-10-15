@@ -24,6 +24,12 @@ function isExcluded(line: string) {
 const identifiers = [];
 const importLine = /import {(.*)} (.*)/;
 const importRequire = /import (.*) = (.*)/;
+
+/**
+ * This method strips duplication import declarations from the concatenated bundle
+ * @param {string} line
+ * @returns {string}
+ */
 function stripDuplicateDeclarations(line) {
     let importResult;
     if ((importResult = importLine.exec(line))) { // tslint:disable-line:no-conditional-assignment
