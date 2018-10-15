@@ -68,7 +68,21 @@ vec4 getLightColor(Light light, vec3 normal) {
 void main() {
     // gl_FragColor is the outpout of the fragment
     gl_FragColor = light.ambientColor * vColor + getLightColor(light, vNormal) * vColor;
-}`};
+}`,
+    // language=GLSL
+    testVertexShader3d: `#version 100
+attribute vec3 a_position;
+
+void main() {
+    gl_Position = vec4(a_position, 1);
+}`,
+    // Test shader verify WebGL rendering has been setup correctly
+    // language=GLSL
+    testFragmentShader: `#version 100
+void main() {
+    gl_FragColor = vec4(1, 0, 0, 1);
+}`,
+};
 
 const shaderConfig: {[id: string]: IShaderOptions} = {
     '3d-vertex-shader': {
@@ -100,6 +114,22 @@ const shaderConfig: {[id: string]: IShaderOptions} = {
                 },
             },
         },
+    },
+    'test-3d-vertex-shader': {
+        id: 'test-3d-vertex-shader',
+        src: embeddedShaders.testVertexShader3d,
+        type: ShaderType.VERTEX_SHADER,
+        spec: {
+            attributes: [
+                {name: 'a_position', size: 3, type: GLDataType.FLOAT},
+            ],
+        },
+    },
+    'test-fragment-shader': {
+        id: 'test-fragment-shader',
+        src: embeddedShaders.testFragmentShader,
+        type: ShaderType.FRAGMENT_SHADER,
+        spec: {},
     },
 };
 

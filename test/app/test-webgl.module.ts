@@ -13,7 +13,7 @@ import {
     Renderer,
     ShaderDTO,
     WebGLApp,
-} from '../../dist';
+} from 'mallet-dev';
 
 class ColorCube extends Entity {
     private cubeZ: number;
@@ -55,6 +55,10 @@ class TestApp extends WebGLApp implements IController {
     public config() {
         this.logger.config({level: Level.Debug});
         this.logger.info('Running Test Controller');
+    }
+
+    public onError() {
+        // error
     }
 
     public init({renderTarget}: IWebGLResourceContext): any {
