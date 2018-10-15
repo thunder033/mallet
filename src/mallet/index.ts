@@ -8,6 +8,9 @@ export * from './core/render-target.component';
 export * from './core/scheduler.service';
 export * from './mallet.config';
 
+// debugger
+export * from './debugger/debugger.module';
+
 // embedded styles
 export {EmbeddedStyle} from './embedded-styles/embedded-styles.library.config';
 

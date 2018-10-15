@@ -285,4 +285,8 @@ export class Transform implements ITransform {
 
         return this.matrix;
     }
+
+    public toString() {
+        return this.getMatrix().toString();
+    }
 }

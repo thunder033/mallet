@@ -1,4 +1,4 @@
-import {IAugmentedJQuery, IController, IQService} from 'angular';
+import {IAugmentedJQuery, IController, IQService, IScope} from 'angular';
 import {ICamera} from '../geometry/camera';
 import {IRenderer} from './renderer';
 import {inject} from '../lib/injector-plus';
@@ -10,12 +10,15 @@ import bind from 'bind-decorator';
 import {Entity, IEntity} from '../geometry/entity';
 import {IWebGLResourceContext} from './webgl-resource-context';
 import {AppState} from '../core/app-state.service';
+import {Debugger} from '../debugger';
 
 export interface IWebGLApp {
     preUpdate?(dt: number, tt: number);
     postUpdate?(dt: number, tt: number);
     init(context: IWebGLResourceContext): any;
     config(): void;
+
+    postRender?(dt: number, tt: number);
 }
 
 export type UpdateMethod = (dt: number, tt: number) => void;
@@ -33,7 +36,7 @@ export abstract class WebGLApp implements IController, IWebGLApp {
     private readonly timestep: number;
 
     /** @description Current Frames Per Second */
-    private fps: number = 0;
+    @Debugger.watch('FPS') private fps: number = 0;
 
     /** @description timestamp of last FPS doUpdate */
     private lastFPSUpdate: number = 0;
@@ -58,13 +61,14 @@ export abstract class WebGLApp implements IController, IWebGLApp {
     /** @description timestamp of the last frame */
     private lastFrameTime: number = 0;
 
-    constructor(
+    protected constructor(
         @inject(MDT.AppState) private appState: AppState,
         @inject(MDT.const.MaxFrameRate) private maxFrameRate: number,
         @inject(MDT.ng.$q) protected $q: IQService,
         @inject(MDT.Library) protected library: ILibraryService,
         @inject(MDT.webgl.WebGLStage) protected stage: IWebGLStage,
         @inject(MDT.ng.$element) protected $element: IAugmentedJQuery,
+        @inject(MDT.ng.$rootScope) protected $rootScope: IScope,
         @inject(MDT.Logger) protected logger: Logger) {
         // get references to constructed entities and their update methods
         this.entities = Entity.getIndex();
@@ -89,30 +93,22 @@ export abstract class WebGLApp implements IController, IWebGLApp {
         this.$q.when(this.init(this.context))
             .then(this.startMainLoop)
             .catch((err) => {
+                this.onError(err);
                 this.logger.error(`Failed to initialize WebGL app`, err);
             });
     }
 
-    /**
-     * The config method is executed during construction, and before the component is linked
-     * to the render target element - during Angular's config phase.
-     */
+    public abstract onError(err: Error): void;
+
     public abstract config(): void;
 
-    /**
-     * The init method is executed during the $postLink phase, providing full access to the
-     * render target
-     * @param {IWebGLResourceContext} context
-     * @returns {any}
-     */
     public abstract init(context: IWebGLResourceContext): void | Promise<any>;
 
-    /**
-     * The postUpdate method can perform any operations between entity updates and rendering
-     * @param {number} dt
-     * @param {number} tt
-     */
     public postUpdate(dt: number, tt: number) {
+        // no-op
+    }
+
+    public postRender(dt: number, tt: number) {
         // no-op
     }
 
@@ -144,6 +140,8 @@ export abstract class WebGLApp implements IController, IWebGLApp {
         let elapsedMs = this.elapsedTime | 0;
         this.updateFPS(elapsedMs);
 
+        this.context.renderTarget.clear();
+
         let updateSteps = 0;
         // const frameDeltaTime = this.deltaTime;
         const dtMs = this.timestep | 0;
@@ -169,6 +167,8 @@ export abstract class WebGLApp implements IController, IWebGLApp {
         }
 
         this.renderer.renderScene();
+        this.postRender(dtMs, elapsedMs);
+        this.$rootScope.$evalAsync();
         this.animationFrame = requestAnimationFrame(this.mainLoop);
     }
 
