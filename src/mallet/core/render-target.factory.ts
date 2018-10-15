@@ -62,8 +62,10 @@ export abstract class RenderTarget implements IRenderTarget {
     constructor(parameters: IRenderTargetOptions, protected logger: Logger) {
         const {width, height} = parameters;
         this.canvas = document.createElement('canvas');
-        this.canvas.width = width;
-        this.canvas.height = height;
+        this.canvas.className = 'mallet-render-target-canvas';
+        // TODO: figure out how to resize this after async styles have been applied (no render bug)
+        this.canvas.width = width || 100;
+        this.canvas.height = height || 100;
         this.ctx = this.getNewContext();
     }
     
@@ -143,7 +145,8 @@ export class RenderTargetWebGL extends RenderTarget {
     protected ctx: WebGLRenderingContext;
 
     public clear() {
-        this.logger.verbose(`clear render target ${this.canvas.id || this.canvas.className}`);
+        // TODO: figure out some kind of frame rendering solution
+        // this.logger.verbose(`clear render target ${this.canvas.id || this.canvas.className}`);
         this.ctx.clear(this.ctx.COLOR_BUFFER_BIT);
     }
 
@@ -157,6 +160,11 @@ export class RenderTargetWebGL extends RenderTarget {
             this.canvas.getContext(CanvasContext.webglExperimental)) as WebGLRenderingContext;
         gl.viewport(0, 0, this.canvas.width, this.canvas.height);
         return gl;
+    }
+
+    public resize(scale: number = 1) {
+        super.resize(scale);
+        this.ctx.viewport(0, 0, this.canvas.width, this.canvas.height);
     }
 
     /**
