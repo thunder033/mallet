@@ -1871,35 +1871,6 @@
 	    resetPointer(): void;
 	}
 
-	export class TestBase {
-	    protected context: {
-	        prop1: number;
-	    };
-	    /**
-	     * This inits stuff
-	     */
-	    init(arg: number): void;
-	}
-	export interface ITestBase {
-	    /**
-	     * Does some stuff with arg
-	     * @param {number} arg
-	     */
-	    init(arg: number): any;
-	} declare const TestMixed_base: {
-	    new (...args: any[]): {
-	        prop1: number;
-	        testMethod(arg: string): any;
-	        context: {
-	            prop1: number;
-	        };
-	        init(arg: number): void;
-	    };
-	} & typeof TestBase;
-	export class TestMixed extends TestMixed_base implements ITestBase {
-	    init(arg: number): void;
-	}
-
 	export interface IFastRendererOptions extends IRendererOptions {
 	    entityCount: number;
 	}
