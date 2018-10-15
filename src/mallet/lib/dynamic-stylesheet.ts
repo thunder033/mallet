@@ -1,6 +1,5 @@
-import {IDocumentService} from 'angular';
+import {element, IDocumentService} from 'angular';
 import {MDT} from '../mallet.dependency-tree';
-import * as angular from 'angular';
 import {Logger} from './logger';
 import {CreateFactory} from './create-factory';
 
@@ -23,7 +22,7 @@ export class DynamicStylesheet implements IDynamicStylesheet {
      */
     public attach() {
         this.logger.verbose('Attach stylesheet to document head');
-        const style = angular.element('<style type="text/css">').text(this.src);
+        const style = element('<style type="text/css">').text(this.src);
         this.$document.find('head').append(style);
     }
 }
