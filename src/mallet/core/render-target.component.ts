@@ -23,6 +23,8 @@ export class RenderTargetCtrl implements IController {
 
     private readonly NO_SUPPORT_MESSAGE = 'Your browser does not support canvas. Please consider upgrading.';
 
+    private resizeObserver: ResizeObserver;
+
     /**
      * This method can only be called in {@link angular.IController.$postLink} hook or later in the Angular lifecycle.
      * Retrieves the {@link RenderTargetCtrl} for the render target element, allowing access to the {@link RenderTarget}
@@ -72,11 +74,24 @@ export class RenderTargetCtrl implements IController {
         this.$element.find('div').append(canvas);
 
         this.scheduler.schedule(this.update, 0);
-        window.addEventListener('resize', this.onResize);
+        if (window.ResizeObserver) {
+            this.resizeObserver = new window.ResizeObserver(() => this.onResize()).observe(this.renderTarget.getCanvas());
+        } else {
+            window.addEventListener('resize', this.onResize);
+        }
+    }
+
+    public $postLink(): void {
+        // embedded styles may not have been applied when the render target was first created
+        this.renderTarget.resize();
     }
 
     public $onDestroy(): void {
-        window.removeEventListener('resize', this.onResize);
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+        } else {
+            window.removeEventListener('resize', this.onResize);
+        }
     }
 
     public getContext(): RenderingContext {

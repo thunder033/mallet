@@ -1,3 +1,51 @@
+interface Window {
+    ResizeObserver: ResizeObserver; }
+
+/**
+ * The ResizeObserver interface is used to observe changes to Element's content
+ * rect.
+ *
+ * It is modeled after MutationObserver and IntersectionObserver.
+ */
+interface ResizeObserver {
+    /**
+     * Adds target to the list of observed elements.
+     */
+    observe: (target: Element) => void;
+
+    /**
+     * Removes target from the list of observed elements.
+     */
+    unobserve: (target: Element) => void;
+
+    /**
+     * Clears both the observationTargets and activeTargets lists.
+     */
+    disconnect: () => void;
+
+    new (callback: ResizeObserverCallback); }
+
+/**
+ * This callback delivers ResizeObserver's notifications. It is invoked by a
+ * broadcast active observations algorithm.
+ */
+type ResizeObserverCallback = (entries: ResizeObserverEntry[], observer: ResizeObserver) => void;
+
+interface ResizeObserverEntry {
+    /**
+     * The Element whose size has changed.
+     */
+    readonly target: Element;
+
+    /**
+     * Element's content rect when ResizeObserverCallback is invoked.
+     */
+    readonly contentRect: DOMRectReadOnly;
+    
+    /**
+     * @param target The Element whose size has changed.
+     */
+    new (target: Element); }
 	import {Vector3} from 'pulsar-lib';
 	/**
 	 * Provides utility functions for working with CSS colors
@@ -558,6 +606,7 @@
 	    protected ctx: RenderingContext;
 	    private type;
 	    private readonly NO_SUPPORT_MESSAGE;
+	    private resizeObserver;
 	    /**
 	     * This method can only be called in {@link angular.IController.$postLink} hook or later in the Angular lifecycle.
 	     * Retrieves the {@link RenderTargetCtrl} for the render target element, allowing access to the {@link RenderTarget}
@@ -569,6 +618,7 @@
 	    static getController($element: IAugmentedJQuery): RenderTargetCtrl;
 	    constructor(logger: Logger, $element: IAugmentedJQuery, mState: any, scheduler: Scheduler, renderTargetFactory: RenderTargetFactory);
 	    $onInit(): void;
+	    $postLink(): void;
 	    $onDestroy(): void;
 	    getContext(): RenderingContext;
 	    getRenderTarget(): IRenderTarget;
