@@ -62,7 +62,7 @@ export class WebGLStage implements IWebGLStage {
         });
 
         // TODO: make this mesh initialization not hard-coded
-        return this.glFactory.init(['cube']).then(() => {
+        return this.glFactory.init(['cube'], ['white']).then(() => {
             this.logger.debug(`WebGL Stage set`);
             return this.getFactory();
         });

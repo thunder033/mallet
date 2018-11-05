@@ -4,6 +4,7 @@ import {ILibraryService} from '../core/library.provider';
 import {WebGLMesh} from './webgl-mesh';
 import {Mesh} from '../geometry/mesh';
 import bind from 'bind-decorator';
+import {Material} from './material';
 
 export interface IWebGLResourceFactory {
     create<R extends IWebGLResource>(ctor: IWebGLSimpleResourceCtor<R>): R;
@@ -25,10 +26,13 @@ export class WebGLResourceFactory implements IWebGLResourceFactory {
     /**
      * Cache pre-defined resources for instant access
      * @param {string[]} meshNames
-     * @returns {Promise<any>}
+     * @returns {Promise<*>}
      */
-    public init(meshNames: string[]): Promise<any> {
-        return Promise.all(meshNames.map(this.registerMesh));
+    public init(meshNames: string[], materialNames): Promise<any> {
+        return Promise.all([
+            ...meshNames.map(this.registerMesh),
+            ...materialNames.map(this.registerMaterial),
+        ]);
             // .then(() => this.library.addSources(WebGLMesh, [new StaticSource(this.resourceCache)]));
     }
 
@@ -60,5 +64,11 @@ export class WebGLResourceFactory implements IWebGLResourceFactory {
         return this.library.get(Mesh, name)
             .then((mesh) => this.create(WebGLMesh, {mesh}))
             .then((glMesh) => this.resourceCache[name] = glMesh);
+    }
+
+    @bind private registerMaterial(name: string): Promise<Material> {
+        // TODO: add some kind of typing scheme to resource cache keys
+        return this.library.get(Material, name)
+            .then((material) => this.resourceCache[name] = material);
     }
 }

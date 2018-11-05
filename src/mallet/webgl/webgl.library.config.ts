@@ -4,6 +4,7 @@ import {inject} from '../lib/injector-plus';
 import {GLDataType, GLUniformType, IShaderOptions, ShaderDTO, ShaderType} from './shader';
 import {IMeshOptions, Mesh} from '../geometry/mesh';
 import glMatrix = require('gl-matrix');
+import {Material} from './material';
 
 const {vec3, vec2} = glMatrix;
 
@@ -175,9 +176,14 @@ const meshes: {[id: string]: IMeshOptions} = {cube: {
     vec3.fromValues(+0.5, -0.5, -0.5)], // RBB 7
     }};
 
+const materials = {
+    white: {diffuse: '#ffcc00ff'},
+};
+
 export class WebGLLibraryConfig {
     constructor(@inject.provider(MDT.Library) libraryProvider: LibraryProvider) {
         libraryProvider.addSources(ShaderDTO, [new StaticSource(shaderConfig)]);
         libraryProvider.addSources(Mesh, [new StaticSource(meshes)]);
+        libraryProvider.addSources(Material, [new StaticSource(materials)]);
     }
 }
