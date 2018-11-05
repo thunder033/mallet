@@ -137,26 +137,34 @@ const shaderConfig: {[id: string]: IShaderOptions} = {
     },
 };
 
+// data is formatted to roughly follow .obj structure
 const meshes: {[id: string]: IMeshOptions} = {cube: {
-    colors: [
-        vec3.fromValues(1.0, 0.0, 0.0),
-        vec3.fromValues(0.0, 1.0, 0.0),
-        vec3.fromValues(0.0, 0.0, 1.0),
-        vec3.fromValues(1.0, 1.0, 0.0),
+    uvs: [ // make every side of the cube show the whole texture
+        [0.0, 0.0],
+        [1.0, 0.0],
+        [0.0, 1.0],
+        [1.0, 1.0],
+    ].map((uv) => vec2.fromValues.apply(void 0, uv)),
+    faces: [
+        // F
+        [0, 2, 2, 1, 1, 0], // face: pos uv | pos uv | pos uv
+        [0, 2, 3, 3, 2, 1],
+        // R
+        [2, 0, 3, 2, 6, 1],
+        [3, 2, 7, 3, 6, 1],
+        // T
+        [1, 2, 6, 1, 5, 0],
+        [1, 2, 2, 3, 6, 1],
 
-        vec3.fromValues(0.0, 1.0, 1.0),
-        vec3.fromValues(1.0, 0.0, 1.0),
-        vec3.fromValues(0.0, 0.0, 0.0),
-        vec3.fromValues(1.0, 1.0, 1.0),
-    ],
-    indices: [
-        0, 2, 1,  0, 3, 2, // F
-        2, 3, 6,  3, 7, 6, // R
-        1, 6, 5,  1, 2, 6, // T
-
-        4, 5, 6,  4, 6, 7, // Back
-        0, 1, 5,  0, 5, 4, // L
-        0, 7, 3,  0, 4, 7, // Bottom
+        // Back
+        [4, 3, 5, 1, 6, 0],
+        [4, 3, 6, 0, 7, 2],
+        // L
+        [0, 3, 1, 1, 5, 0],
+        [0, 3, 5, 0, 4, 2],
+        // Bottom
+        [0, 0, 7, 3, 3, 1],
+        [0, 0, 4, 2, 7, 3],
     ],
     positions: [
     /*   5  +---+ 6

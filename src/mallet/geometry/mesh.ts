@@ -1,32 +1,62 @@
 
 import glMatrix = require('gl-matrix');
-
-const {vec3} = glMatrix;
+import {vec2, vec3} from 'gl-matrix';
 
 export interface IMeshOptions {
     positions: glMatrix.vec3[];
-    indices: number[];
+    faces: number[][];
+    normals?: glMatrix.vec3[];
+    uvs?: glMatrix.vec2[];
     colors?: glMatrix.vec3[];
 }
 
+export interface IVertex {
+    position: vec3;
+    normal: vec3;
+    uv: vec2;
+    index: number;
+}
+
+/**
+ * Constructs an optimized mesh from input data, with buffers ready to be utilized for
+ * rendering pipeline
+ */
 export class Mesh {
-    public static VERT_SIZE = 9;
+    /** @description number of array elements vertex requires */
+    public static VERT_SIZE = 8;
 
-    private size: glMatrix.vec3;
+    // Working Data to calculate buffers (will not exist after construction)
+    private positions: glMatrix.vec3[];
+    private uvs: vec2[];
+    private indices: number[];
+    private vertices: {[hash: string]: IVertex};
+    private vertexList: IVertex[];
 
+    // output buffers
     private indexBuffer: Readonly<ArrayBuffer>;
     private vertexBuffer: Readonly<ArrayBuffer>;
 
-    private positions: glMatrix.vec3[];
-    private indices: number[];
+    // output metadata and stats
+    private size: glMatrix.vec3;
     private vertexCount: number;
     private indexCount: number;
+
+    /**
+     * Generate a unique primitive identifier for vertex attribute indices - allows us to only
+     * create the vertices need to an avoid unnecessary duplication
+     * @param {number[]} vertIndices
+     */
+    private static getVertHash(vertIndices: number[]): string {
+        // const slotSize = 8;
+        // return vertIndices.reduce((hash, value, slot) => hash | (value << (slot * slotSize)), 0);
+        return vertIndices.join('|');
+    }
 
     /**
      * Get the dimensions of the mesh buffer
      * @param verts
      */
-    private static getSize(verts: glMatrix.vec3[]): glMatrix.vec3 {
+    private static getSize(verts: vec3[]): vec3 {
         if (verts.length === 0) {
             return vec3.create();
         }
@@ -65,7 +95,7 @@ export class Mesh {
      * @param {number[]} indices
      * @returns {glMatrix.vec3[]}
      */
-    private static calculateFaceNormals(verts: glMatrix.vec3[], indices: number[]): glMatrix.vec3[] {
+    private static calculateFaceNormals(verts: IVertex[], indices: number[]): glMatrix.vec3[] {
         const faceSize = 3;
         if (indices.length % faceSize !== 0) {
             return null;
@@ -79,8 +109,8 @@ export class Mesh {
             const b = verts[indices[i + 1]];
             const c = verts[indices[i + 2]];
 
-            vec3.subtract(ab, b, a);
-            vec3.subtract(ac, c, a);
+            vec3.subtract(ab, b.position, a.position);
+            vec3.subtract(ac, c.position, a.position);
 
             const normal = vec3.create();
             vec3.cross(normal, ab, ac);
@@ -95,74 +125,131 @@ export class Mesh {
     }
 
     /**
-     * Calculate vertex normals by averaging the face normals for each vertex
-     * @param {glMatrix.vec3[]} verts
-     * @param {number[]} indices
-     * @param {glMatrix.vec3[]} faceNormals
-     * @returns {glMatrix.vec3[]}
-     */
-    private static calculateVertexNormals(verts: glMatrix.vec3[], indices: number[], faceNormals: glMatrix.vec3[]): glMatrix.vec3[] {
-        const vertexNormals = verts.map(() => vec3.create());
-        const faceSize = 3;
-
-        let f; // index of the current face;
-        for (let i = 0; i < indices.length; i++) {
-            f = (i / faceSize) | 0;
-            const vn = vertexNormals[indices[i]];
-            vec3.add(vn, vn, faceNormals[f]);
-        }
-
-        vertexNormals.forEach((normal) => vec3.normalize(normal, normal));
-
-        return vertexNormals;
-    }
-
-    /**
-     * Construct a vertex buffer from the positions and normals arrays
-     * @param {glMatrix.vec3[]} positions
-     * @param {glMatrix.vec3[]} normals
-     * @param {glMatrix.vec3[]} colors
-     * @returns {ArrayBuffer}
-     */
-    private static buildVertexBuffer(positions: glMatrix.vec3[], normals: glMatrix.vec3[], colors: glMatrix.vec3[]): ArrayBuffer {
-        const buffer = new Float32Array(positions.length * Mesh.VERT_SIZE);
-        positions.forEach((vert, i) => {
-            const vertIndex = i * Mesh.VERT_SIZE;
-            buffer[vertIndex] = vert[0];
-            buffer[vertIndex + 1] = vert[1];
-            buffer[vertIndex + 2] = vert[2];
-
-            const normal = normals[i];
-            buffer[vertIndex + 3] = normal[0];
-            buffer[vertIndex + 4] = normal[1];
-            buffer[vertIndex + 5] = normal[2];
-
-            const color = colors[i];
-            buffer[vertIndex + 6] = color[0];
-            buffer[vertIndex + 7] = color[1];
-            buffer[vertIndex + 8] = color[2];
-        });
-
-        console.log(buffer);
-        return buffer.buffer;
-    }
-
-    /**
      * Defines a set of points in space and how they form a 3D object
      * @param {IMeshOptions} params
      */
     constructor(params: IMeshOptions) {
+        // intake vertex data
         this.positions = params.positions;
-        this.indices = params.indices;
-        this.vertexCount = (params.positions.length / 3) | 0;
-        this.indexCount = params.indices.length;
+        this.uvs = params.uvs;
 
         this.size = Mesh.getSize(params.positions);
-        const faceNormals = Mesh.calculateFaceNormals(this.positions, this.indices) || [];
-        const vertexNormals = Mesh.calculateVertexNormals(this.positions, this.indices, faceNormals);
-        this.vertexBuffer = Object.freeze(Mesh.buildVertexBuffer(this.positions, vertexNormals, params.colors));
+
+        this.vertices = {};
+        this.indices = [];
+        // parse the face index arrays into vertex and index buffers
+        params.faces.forEach((face) => this.readFace(face));
+        // create and set a list of vertices ordered by index
+        this.collectVertexList();
+
+        // Use existing normal calculation algorithm to generate normals
+        const faceNormals = Mesh.calculateFaceNormals(this.vertexList, this.indices) || [];
+        this.calculateVertexNormals(faceNormals);
+
+        // build buffers
+        this.buildVertexBuffer();
         this.indexBuffer = Object.freeze((new Uint16Array(this.indices)).buffer);
+
+        // store stats & necessary metadata
+        this.indexCount = this.indices.length;
+        this.vertexCount = this.vertexList.length;
+
+        // free up all the unnecessary data and prevent any modifications
+        this.cleanUp();
         Object.seal(this);
+    }
+
+    /**
+     * Release all the data we don't need after processing the input data
+     */
+    protected cleanUp() {
+        delete this.vertices;
+        delete this.vertexList;
+        delete this.positions;
+        delete this.uvs;
+        delete this.indices;
+    }
+
+    protected collectVertexList() {
+        this.vertexList = Object.values(this.vertices).sort((a, b) => a.index - b.index);
+    }
+
+    /**
+     * Construct a vertex buffer from list of vertices and set it on instance
+     */
+    protected buildVertexBuffer() {
+        const buffer = new Float32Array(this.vertexList.length * Mesh.VERT_SIZE);
+
+        this.vertexList.forEach((vert, i) => {
+            const vertIndex = i * Mesh.VERT_SIZE;
+            buffer[vertIndex] = vert.position[0];
+            buffer[vertIndex + 1] = vert.position[1];
+            buffer[vertIndex + 2] = vert.position[2];
+
+            buffer[vertIndex + 3] = vert.normal[0];
+            buffer[vertIndex + 4] = vert.normal[1];
+            buffer[vertIndex + 5] = vert.normal[2];
+
+            buffer[vertIndex + 6] = vert.uv[0];
+            buffer[vertIndex + 7] = vert.uv[1];
+        });
+
+        console.log(buffer);
+        this.vertexBuffer = Object.freeze(buffer.buffer);
+    }
+
+    /**
+     * Calculate vertex normals by averaging the face normals for each vertex
+     * @param {vec3[]} faceNormals
+     * @returns {vec3[]}
+     */
+    protected calculateVertexNormals(faceNormals: glMatrix.vec3[]) {
+        const faceSize = 3;
+
+        let f; // index of the current face
+        // add all the face normals that utilize the vertex
+        for (let i = 0; i < this.indices.length; i++) {
+            f = (i / faceSize) | 0;
+            const vn =  vec3.create();
+            vec3.add(vn, vn, faceNormals[f]);
+            this.vertexList[this.indices[i]].normal = vn;
+        }
+
+        // normalize after all components are added so they have equal weight
+        this.vertexList.forEach((vert) => vec3.normalize(vert.normal, vert.normal));
+    }
+
+    protected readFace(face: number[]) {
+        const vertSize = 2;
+        for (let i = 0; i < face.length; i += vertSize) {
+            const vertHash = Mesh.getVertHash([face[i], face[i + 1]]);
+            if (this.vertices[vertHash]) {
+                this.indices.push(this.vertices[vertHash].index);
+            } else {
+                this.indices.push(this.createVertex(face[i], face[i + 1]).index);
+            }
+        }
+    }
+
+    protected createVertex(positionIndex: number, uvIndex: number): IVertex {
+        if (!this.positions[positionIndex]) {
+            throw new ReferenceError(`Invalid vertex position index ${positionIndex}`);
+        }
+
+        if (!this.uvs[uvIndex]) {
+            throw new ReferenceError(`Invalid vertex UV index ${positionIndex}`);
+        }
+
+        const vertex = {
+            position: this.positions[positionIndex],
+            uv: this.uvs[uvIndex],
+            index: Object.keys(this.vertices).length,
+            normal: null,
+        };
+
+        const vertHash = Mesh.getVertHash([positionIndex, uvIndex]);
+        this.vertices[vertHash] = vertex;
+        return vertex;
     }
 
     public getVertexCount(): number {
