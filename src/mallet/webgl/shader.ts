@@ -9,9 +9,9 @@ export interface IShader extends IWebGLResource {
 }
 
 export enum GLDataType {
-    BYTE = 'BYTE',
-    FLOAT = 'FLOAT',
-    SHORT = 'SHORT',
+    BYTE = 'BYTE', // 8
+    FLOAT = 'FLOAT', // 32
+    SHORT = 'SHORT', // 16
     UNSIGNED_SHORT = 'UNSIGNED_SHORT',
     UNSIGNED_BYTE = 'UNSIGNED_BYTE',
     HALF_FLOAT = 'HALF_FLOAT', // future-proof for webgl 2

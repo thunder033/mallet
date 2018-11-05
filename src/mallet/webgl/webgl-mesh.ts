@@ -12,6 +12,9 @@ export interface IWebGLMeshOptions {
     mesh: Mesh;
 }
 
+/**
+ * Reference to mesh (vertex & index buffer) loaded into vram
+ */
 export class WebGLMesh extends WebGLResource implements IWebGLMesh {
     private glVertexBuffer: WebGLBuffer;
     private glIndexBuffer: WebGLBuffer;

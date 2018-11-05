@@ -26,7 +26,7 @@ class WebGLStageCtrl implements IController {
     public $postLink(): void {
         this.loadRenderingContext();
         this.stage.set(this.renderTarget).catch((e) => {
-            this.logger.error(e.message || e);
+            this.logger.error(e.message, e);
             this.logger.warn(`Failed to WebGL stage, exiting setup method`);
         });
     }
