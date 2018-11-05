@@ -21,7 +21,7 @@ class ColorCube extends Entity {
     private cubeRot: number;
 
     constructor() {
-        super('cube');
+        super({meshName: 'cube', materialName: 'white'});
         this.cubeZ = -1;
         this.cubeDelta = 1 / 500;
         this.cubeRot = 0;
@@ -29,7 +29,7 @@ class ColorCube extends Entity {
 
     public update(dt: number, tt: number): void {
         this.cubeZ += dt * this.cubeDelta;
-        this.cubeRot += dt * this.cubeDelta * 200;
+        this.cubeRot += dt * this.cubeDelta * 50;
 
         const min = -10;
         const max = -0.1 - 0.5;

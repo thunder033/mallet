@@ -30,3 +30,4 @@ export * from './webgl/webgl-app';
 export * from './webgl/webgl-mesh';
 export * from './webgl/shader';
 export * from './webgl/webgl-resource';
+export * from './webgl/material';

@@ -372,7 +372,7 @@ interface ResizeObserverEntry {
 	/**
 	 * Created by gjrwcs on 9/15/2016.
 	 */
-	export type Image = HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | ImageBitmap;
+	export type MalletImage = HTMLImageElement | HTMLVideoElement | HTMLCanvasElement | ImageBitmap;
 	export type RenderingContext = CanvasRenderingContext2D | WebGLRenderingContext;
 	export interface IRenderTarget {
 	    /**
@@ -1050,20 +1050,43 @@ interface ResizeObserverEntry {
 
 	/// <reference types="gl-matrix" />
 
+	import {vec2} from 'gl-matrix';
 	export interface IMeshOptions {
 	    positions: glMatrix.vec3[];
-	    indices: number[];
+	    faces: number[][];
+	    normals?: glMatrix.vec3[];
+	    uvs?: glMatrix.vec2[];
 	    colors?: glMatrix.vec3[];
 	}
+	export interface IVertex {
+	    position: vec3;
+	    normal: vec3;
+	    uv: vec2;
+	    index: number;
+	}
+	/**
+	 * Constructs an optimized mesh from input data, with buffers ready to be utilized for
+	 * rendering pipeline
+	 */
 	export class Mesh {
+	    /** @description number of array elements vertex requires */
 	    static VERT_SIZE: number;
-	    private size;
+	    private positions;
+	    private uvs;
+	    private indices;
+	    private vertices;
+	    private vertexList;
 	    private indexBuffer;
 	    private vertexBuffer;
-	    private positions;
-	    private indices;
+	    private size;
 	    private vertexCount;
 	    private indexCount;
+	    /**
+	     * Generate a unique primitive identifier for vertex attribute indices - allows us to only
+	     * create the vertices need to an avoid unnecessary duplication
+	     * @param {number[]} vertIndices
+	     */
+	    private static getVertHash(vertIndices);
 	    /**
 	     * Get the dimensions of the mesh buffer
 	     * @param verts
@@ -1077,30 +1100,53 @@ interface ResizeObserverEntry {
 	     */
 	    private static calculateFaceNormals(verts, indices);
 	    /**
-	     * Calculate vertex normals by averaging the face normals for each vertex
-	     * @param {glMatrix.vec3[]} verts
-	     * @param {number[]} indices
-	     * @param {glMatrix.vec3[]} faceNormals
-	     * @returns {glMatrix.vec3[]}
-	     */
-	    private static calculateVertexNormals(verts, indices, faceNormals);
-	    /**
-	     * Construct a vertex buffer from the positions and normals arrays
-	     * @param {glMatrix.vec3[]} positions
-	     * @param {glMatrix.vec3[]} normals
-	     * @param {glMatrix.vec3[]} colors
-	     * @returns {ArrayBuffer}
-	     */
-	    private static buildVertexBuffer(positions, normals, colors);
-	    /**
 	     * Defines a set of points in space and how they form a 3D object
 	     * @param {IMeshOptions} params
 	     */
 	    constructor(params: IMeshOptions);
+	    /**
+	     * Release all the data we don't need after processing the input data
+	     */
+	    protected cleanUp(): void;
+	    protected collectVertexList(): void;
+	    /**
+	     * Construct a vertex buffer from list of vertices and set it on instance
+	     */
+	    protected buildVertexBuffer(): void;
+	    /**
+	     * Calculate vertex normals by averaging the face normals for each vertex
+	     * @param {vec3[]} faceNormals
+	     * @returns {vec3[]}
+	     */
+	    protected calculateVertexNormals(faceNormals: glMatrix.vec3[]): void;
+	    protected readFace(face: number[]): void;
+	    protected createVertex(positionIndex: number, uvIndex: number): IVertex;
 	    getVertexCount(): number;
 	    getIndexCount(): number;
 	    getVertexBuffer(): Readonly<ArrayBuffer>;
 	    getIndexBuffer(): Readonly<ArrayBuffer>;
+	}
+
+	/// <reference types="gl-matrix" />
+	import {vec4} from 'gl-matrix';
+	export type ColorDef = vec4 | vec3 | [number, number, number] | [number, number, number, number] | string;
+	export interface IMaterial {
+	    apply(): any;
+	}
+	export interface IMaterialOptions {
+	    texture?: WebGLTexture | MalletImage;
+	    diffuse?: ColorDef;
+	}
+	export class Material extends WebGLResource implements IMaterial {
+	    private static defaultColor;
+	    private readonly color;
+	    private readonly texture;
+	    private static parseColorDef(colorDef);
+	    constructor(options: IMaterialOptions);
+	    apply(): void;
+	    release(): void;
+	    private parseInputTexture(inputData);
+	    private createDefaultTexture(color);
 	}
 
 	export interface IWebGLResourceFactory {
@@ -1118,9 +1164,9 @@ interface ResizeObserverEntry {
 	    /**
 	     * Cache pre-defined resources for instant access
 	     * @param {string[]} meshNames
-	     * @returns {Promise<any>}
+	     * @returns {Promise<*>}
 	     */
-	    init(meshNames: string[]): Promise<any>;
+	    init(meshNames: string[], materialNames: any): Promise<any>;
 	    /**
 	     * Create a new resource instance with no parameters (class must have default constructor)
 	     * @param {IWebGLSimpleResourceCtor<R extends IWebGLResource>} ctor
@@ -1140,6 +1186,7 @@ interface ResizeObserverEntry {
 	     * @returns {Promise<WebGLMesh>}
 	     */
 	    private registerMesh(name);
+	    private registerMaterial(name);
 	}
 
 	export interface IWebGLResourceContext {
@@ -1200,6 +1247,9 @@ interface ResizeObserverEntry {
 	export interface IWebGLMeshOptions {
 	    mesh: Mesh;
 	}
+	/**
+	 * Reference to mesh (vertex & index buffer) loaded into vram
+	 */
 	export class WebGLMesh extends WebGLResource implements IWebGLMesh {
 	    private glVertexBuffer;
 	    private glIndexBuffer;
@@ -1287,6 +1337,7 @@ interface ResizeObserverEntry {
 	     */
 	    update?(dt: number, tt: number): void;
 	    getMesh(): IWebGLMesh;
+	    getMaterial(): IMaterial;
 	    getPosition(): vec3;
 	    getRotation(): quat;
 	    rotate(rotation: vec3): void;
@@ -1299,13 +1350,17 @@ interface ResizeObserverEntry {
 	    rotateTo(orientation: vec3 | quat): void;
 	    destroy(): void;
 	}
+	export interface IEntityOptions {
+	    meshName: string;
+	    materialName: string;
+	}
 	export type EntityCollection<T> = T[];
 	/**
 	 * @implements IEntity, IWebGlResources
 	 * @extends WebGLResource
 	 */
 	export abstract class Entity extends WebGLResource implements IEntity, IWebGLResource {
-	    private meshName;
+	    private options;
 	    private static curId;
 	    private static index;
 	    private static updateMethods;
@@ -1317,9 +1372,10 @@ interface ResizeObserverEntry {
 	    protected transform: ITransform;
 	    private readonly id;
 	    private mesh;
+	    private material;
 	    static getIndex(): EntityCollection<IEntity>;
 	    static getUpdateIndex(): EntityCollection<(dt: number, tt: number) => void>;
-	    protected constructor(meshName: string);
+	    protected constructor(options: IEntityOptions);
 	    init(resources: {
 	        [name: string]: IWebGLResource;
 	    }): void;
@@ -1327,6 +1383,7 @@ interface ResizeObserverEntry {
 	    update(dt: number, tt: number): void;
 	    getTransform(): ITransform;
 	    getMesh(): WebGLMesh;
+	    getMaterial(): IMaterial;
 	    /**
 	     * @deprecated Not yet implemented
 	     */
