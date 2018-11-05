@@ -75,6 +75,8 @@ export class Renderer extends WebGLResource implements IRenderer {
         // use program & enable attributes
         this.activeProgram.use();
 
+        entity.getMaterial().apply();
+
         // send index buffer to the GPU
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.getIndexBuffer());
         const matrix = entity.getTransform().getMatrix();
@@ -110,6 +112,10 @@ export class Renderer extends WebGLResource implements IRenderer {
     public setActiveProgram(program: IShaderProgram): void {
         if (!program) {
             throw new ReferenceError('Active program cannot be null or undefined');
+        }
+
+        if (this.activeProgram === program) {
+            return;
         }
 
         this.activeProgram = program;

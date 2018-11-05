@@ -1,10 +1,10 @@
-
 import {ITransform, Transform} from './transform';
 import {IWebGLMesh, WebGLMesh} from '../webgl/webgl-mesh';
 import {quat, vec3} from 'gl-matrix';
 import {IWebGLResource, WebGLResource} from '../webgl/webgl-resource';
 import {FastTransform} from './fast-transform';
 import bind from 'bind-decorator';
+import {IMaterial, Material} from '../webgl/material';
 
 export interface IEntity {
     getTransform(): ITransform;
@@ -16,6 +16,7 @@ export interface IEntity {
      */
     update?(dt: number, tt: number): void;
     getMesh(): IWebGLMesh;
+    getMaterial(): IMaterial;
 
     getPosition(): vec3;
     getRotation(): quat;
@@ -31,6 +32,11 @@ export interface IEntity {
 
     rotateTo(orientation: vec3 | quat): void;
     destroy(): void;
+}
+
+export interface IEntityOptions {
+    meshName: string;
+    materialName: string;
 }
 
 export type EntityCollection<T> = T[];
@@ -53,7 +59,9 @@ export abstract class Entity extends WebGLResource implements IEntity, IWebGLRes
 
     protected transform: ITransform;
     private readonly id: number;
+
     private mesh: WebGLMesh;
+    private material: IMaterial;
 
     public static getIndex(): EntityCollection<IEntity> {
         return Entity.index;
@@ -63,14 +71,14 @@ export abstract class Entity extends WebGLResource implements IEntity, IWebGLRes
         return Entity.updateMethods;
     }
 
-    protected constructor(private meshName: string) {
+    protected constructor(private options: IEntityOptions) {
         super();
         // register entity in the index
         this.id = Entity.curId++;
         Entity.index[this.id] = this;
 
         if (this.update !== Entity.prototype.update) {
-            this.context.logger.debug(`Add entity update method for ${this.constructor.name}#${this.id} with mesh ${meshName}`);
+            this.context.logger.debug(`Add entity update method for ${this.constructor.name}#${this.id} with mesh ${options.meshName}`);
             Entity.updateMethods.push(this.update.bind(this));
         }
 
@@ -91,7 +99,8 @@ export abstract class Entity extends WebGLResource implements IEntity, IWebGLRes
     }
 
     public init(resources: {[name: string]: IWebGLResource}): void {
-        this.mesh = resources[this.meshName] as WebGLMesh;
+        this.mesh = resources[this.options.meshName] as WebGLMesh;
+        this.material = resources[this.options.materialName] as Material;
     }
 
     @bind public scale(scalar: number): void {
@@ -108,6 +117,10 @@ export abstract class Entity extends WebGLResource implements IEntity, IWebGLRes
 
     public getMesh() {
         return this.mesh;
+    }
+
+    public getMaterial() {
+        return this.material;
     }
 
     /**
