@@ -5,7 +5,7 @@ import {GLDataType, GLUniformType, IShaderOptions, ShaderDTO, ShaderType} from '
 import {IMeshOptions, Mesh} from '../geometry/mesh';
 import glMatrix = require('gl-matrix');
 
-const {vec3} = glMatrix;
+const {vec3, vec2} = glMatrix;
 
 // this kinda sucks but it's the only way to reasonably have access to this data without
 // a server or build process to package it
@@ -15,14 +15,14 @@ const embeddedShaders = {
 //an attribute will receive data from a buffer
 attribute vec3 a_position;
 attribute vec3 a_normal;
-attribute vec3 a_color;
+attribute vec2 a_uv;
 
 uniform mat4 world;
 uniform mat4 view;
 uniform mat4 projection;
 
-varying highp vec4 vColor;
 varying highp vec3 vNormal;
+varying highp vec2 vTextureCoord;
 //starting point
 void main() {
     // The vertex's position (input.position) must be converted to world space,
@@ -37,8 +37,8 @@ void main() {
    
     gl_Position = projectionViewWorld * vec4(a_position, 1);
     
-    vColor = vec4(a_color, 1.0);
     vNormal = vec3(world * view * vec4(a_normal, 1));
+    vTextureCoord = a_uv;
 }`,
     // language=GLSL
     fragmentShader: `#version 100
@@ -46,8 +46,8 @@ void main() {
 // as mediump, "medium precision"
 precision mediump float;
 
-varying highp vec4 vColor;
 varying highp vec3 vNormal;
+varying highp vec2 vTextureCoord;
 
 struct Light {
     vec4 ambientColor;
@@ -58,6 +58,8 @@ struct Light {
 // uniform int numLights;
 uniform Light light;
 
+uniform sampler2D uSampler;
+
 vec4 getLightColor(Light light, vec3 normal) {
     vec3 lightDir = normalize(-light.direction);
     float lightAmt = clamp(dot(lightDir, normal), 0.0, 1.0);
@@ -66,8 +68,9 @@ vec4 getLightColor(Light light, vec3 normal) {
 }
 
 void main() {
+    vec4 textureColor =  texture2D(uSampler, vTextureCoord);
     // gl_FragColor is the outpout of the fragment
-    gl_FragColor = light.ambientColor * vColor + getLightColor(light, vNormal) * vColor;
+    gl_FragColor = light.ambientColor * textureColor + getLightColor(light, vNormal) * textureColor;
 }`,
     // language=GLSL
     testVertexShader3d: `#version 100
@@ -93,7 +96,7 @@ const shaderConfig: {[id: string]: IShaderOptions} = {
             attributes: [
                 {name: 'a_position', size: 3, type: GLDataType.FLOAT},
                 {name: 'a_normal', size: 3, type: GLDataType.FLOAT, normalize: true},
-                {name: 'a_color', size: 3, type: GLDataType.FLOAT}],
+                {name: 'a_uv', size: 2, type: GLDataType.FLOAT}],
             uniforms: {
                 view: GLUniformType.uniformMatrix4fv,
                 projection: GLUniformType.uniformMatrix4fv,
