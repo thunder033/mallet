@@ -24,6 +24,7 @@ function isExcluded(line: string) {
 const identifiers = [];
 const importLine = /import {(.*)} (.*)/;
 const importRequire = /import (.*) = (.*)/;
+const internalInlineImport = /import\("\..*\)\./;
 
 /**
  * This method strips duplication import declarations from the concatenated bundle
@@ -49,6 +50,16 @@ function stripDuplicateDeclarations(line) {
     }
 
     return line;
+}
+
+/**
+ * Under some circumstances it looks like an inline import statement will be generated;
+ * these will not resolve so just strip them out - what ever they are importing should
+ * be available in the file context already
+ * @param line
+ */
+function stripInternalInlineImports(line) {
+    return line.replace(internalInlineImport, '');
 }
 
 /**
@@ -88,7 +99,7 @@ function getIsAmbientContext(line): boolean {
 reader.on('line', (line) => {
     if (!isExcluded(line)) {
         const isAmbient: boolean = getIsAmbientContext(line);
-        const finalLine = ([stripDuplicateDeclarations, declareConst] as Function[])
+        const finalLine = ([stripDuplicateDeclarations, declareConst, stripInternalInlineImports] as Function[])
             .reduce((processedLine, processor) => processor(processedLine, isAmbient), line);
         indexOut.push(finalLine);
     }

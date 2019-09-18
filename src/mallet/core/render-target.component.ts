@@ -140,9 +140,9 @@ class RenderTarget2DCtrl extends RenderTargetCtrl {
 }
 
 export const options: IComponentOptions = {
-    controller: ngAnnotate(RenderTargetCtrl) as any,
-    template: '<div class="render-target viewport-container"></div>',
     bindings: {
         type: '<',
     },
+    controller: ngAnnotate(RenderTargetCtrl) as any,
+    template: '<div class="render-target viewport-container"></div>',
 };

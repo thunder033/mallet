@@ -181,7 +181,7 @@ export class RenderTargetWebGL extends RenderTarget {
     }
 }
 
-export interface IRenderTargetCtor {new (...args): IRenderTarget; }
+export type IRenderTargetCtor = new (...args) => IRenderTarget;
 
 /**
  * @function RenderTargetFactory
@@ -195,11 +195,11 @@ export interface IRenderTargetCtor {new (...args): IRenderTarget; }
  * const height = 100;
  * const renderTarget = renderTargetFactory(RenderTargetWebGL, {width, height});
  */
-export type RenderTargetFactory = <T extends IRenderTarget>(ctor: {new(...args): T}, options: IRenderTargetOptions) => T;
+export type RenderTargetFactory = <T extends IRenderTarget>(ctor: new(...args) => T, options: IRenderTargetOptions) => T;
 
 export class renderTargetFactory implements InjectableMethod { // tslint:disable-line:class-name
     public exec(@inject(MDT.Logger) logger: Logger) {
-        return <T extends RenderTarget>(ctor: {new(...args): T}, options: IRenderTargetOptions): T => {
+        return <T extends RenderTarget>(ctor: new(...args) => T, options: IRenderTargetOptions): T => {
             return new ctor(options, logger) as T;
         };
     }

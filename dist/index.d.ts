@@ -117,9 +117,7 @@ interface ResizeObserverEntry {
 	     * @param {{new(): StateMachine}} machine
 	     * @returns {number}
 	     */
-	    static all(machine: {
-	        new (): StateMachine;
-	    }): number;
+	    static all(machine: new () => StateMachine): number;
 	    constructor();
 	    /**
 	     * Indicates if a given state is active
@@ -171,7 +169,7 @@ interface ResizeObserverEntry {
 	     * @param {number} state
 	     * @param {number} prevState
 	     */
-	    private invokeStateListeners(state, prevState);
+	    private invokeStateListeners;
 	}
 
 	export class Level extends StateMachine {
@@ -194,7 +192,7 @@ interface ResizeObserverEntry {
 	     * @param {string} stack
 	     * @param {number} [calls=0]
 	     */
-	    private static getTrace(stack, calls?);
+	    private static getTrace;
 	    constructor(params?: {
 	        level?: Level;
 	        tag?: string;
@@ -218,15 +216,12 @@ interface ResizeObserverEntry {
 	    debug(...args: any[]): any;
 	    verbose(message: string): any;
 	    verbose(...args: any[]): any;
-	    private logOut(args, msgLevel, func);
+	    private logOut;
 	}
 
-	/// <reference types="angular" />
 	import 'reflect-metadata';
 	import {IController, IModule, IServiceProvider} from 'angular';
-	export interface InjectableMethodCtor {
-	    new (): InjectableMethod;
-	}
+	export type InjectableMethodCtor = new () => InjectableMethod;
 	export interface InjectableMethod {
 	    exec(...args: any[]): any;
 	}
@@ -260,9 +255,7 @@ interface ResizeObserverEntry {
 	 * Annotate an Angular provider definition (ex. with module.provider instead of service, controller, etc.)
 	 * @param {{new(): angular.IServiceProvider}} constructor
 	 */
-	export function ngAnnotateProvider(constructor: {
-	    new (...args): IServiceProvider;
-	}): void;
+	export function ngAnnotateProvider(constructor: new (...args: any[]) => IServiceProvider): void;
 	export type AnnotatedProvider = Array<string | Function>;
 	export type AnnotatedController = Array<string | (new (...args: any[]) => IController) | ((...args: any[]) => void | IController)>;
 	/**
@@ -301,30 +294,29 @@ interface ResizeObserverEntry {
 
 	 declare const MDT: {
 	    component: {
-	        webGLStage: string;
-	        renderTarget: string;
 	        debugger: string;
+	        renderTarget: string;
 	        webGLApp: string;
+	        webGLStage: string;
 	    };
 	    config: {
-	        mallet: string;
 	        EmbeddedStyles: string;
 	        Path: string;
+	        mallet: string;
 	    };
-	    ['const']: {
+	    const: {
+	        BuildVersion: string;
 	        Keys: string;
+	        LoggingLevel: string;
 	        MaxFrameRate: string;
 	        SampleCount: string;
 	        ScaleFactor: string;
-	        BuildVersion: string;
-	        LoggingLevel: string;
 	    };
 	    ng: {
-	        $element: string;
-	        $location: string;
-	        $window: string;
 	        $document: string;
+	        $element: string;
 	        $http: string;
+	        $location: string;
 	        $locationProvider: string;
 	        $q: string;
 	        $rootScope: string;
@@ -335,24 +327,25 @@ interface ResizeObserverEntry {
 	        $stateProvider: string;
 	        $timeout: string;
 	        $urlService: string;
+	        $window: string;
 	    };
+	    AppState: string;
 	    AsyncRequest: string;
 	    Camera: string;
 	    Color: string;
 	    DynamicStylesheet: string;
 	    Geometry: string;
 	    Keyboard: string;
+	    Library: string;
 	    Logger: string;
 	    Math: string;
 	    MouseUtils: string;
 	    ParticleEmitter: string;
 	    ParticleEmitter2D: string;
+	    RenderTarget: string;
 	    Scheduler: string;
-	    AppState: string;
 	    StateMachine: string;
 	    Thread: string;
-	    RenderTarget: string;
-	    Library: string;
 	    webgl: {
 	        ShaderSource: string;
 	        WebGLStage: string;
@@ -451,11 +444,9 @@ interface ResizeObserverEntry {
 	     * Determines if WebGL is supported in the current browser
 	     * @returns {boolean}
 	     */
-	    private isWebGLSupported();
+	    private isWebGLSupported;
 	}
-	export interface IRenderTargetCtor {
-	    new (...args: any[]): IRenderTarget;
-	}
+	export type IRenderTargetCtor = new (...args: any[]) => IRenderTarget;
 	/**
 	 * @function RenderTargetFactory
 	 * Creates a new {@link IRenderTarget} instance of the given constructor
@@ -468,14 +459,11 @@ interface ResizeObserverEntry {
 	 * const height = 100;
 	 * const renderTarget = renderTargetFactory(RenderTargetWebGL, {width, height});
 	 */
-	export type RenderTargetFactory = <T extends IRenderTarget>(ctor: {
-	    new (...args): T;
-	}, options: IRenderTargetOptions) => T;
+	export type RenderTargetFactory = <T extends IRenderTarget>(ctor: new (...args: any[]) => T, options: IRenderTargetOptions) => T;
 	export class renderTargetFactory implements InjectableMethod {
 	    exec(logger: Logger): <T extends RenderTarget>(ctor: new (...args: any[]) => T, options: IRenderTargetOptions) => T;
 	}
 
-	/// <reference types="angular" />
 	import {ILocationService} from 'angular';
 	export class AppState extends StateMachine {
 	    private $location;
@@ -523,7 +511,7 @@ interface ResizeObserverEntry {
 	    private elapsedTime;
 	    /** @description timestamp of the last frame */
 	    private lastFrameTime;
-	    private static scheduleCommand(command, priority, queue);
+	    private static scheduleCommand;
 	    /**
 	     * average Frames executed per second over the last
 	     * @returns {number}
@@ -569,27 +557,26 @@ interface ResizeObserverEntry {
 	     * @param stepDeltaTime
 	     * @param totalElapsedTime
 	     */
-	    private doUpdate(stepDeltaTime, totalElapsedTime);
+	    private doUpdate;
 	    /**
 	     * Execute all draw and post-draw commands, emptying each queue
 	     * @param stepDeltaTime
 	     * @param totalElapsedTime
 	     */
-	    private doDraw(stepDeltaTime, totalElapsedTime);
+	    private doDraw;
 	    /**
 	     * Update the FPS value
 	     * @param totalElapsedTime
 	     */
-	    private updateFPS(totalElapsedTime);
+	    private updateFPS;
 	    /**
 	     * Derived From
 	     * Isaac Sukin
 	     * http://www.isaacsukin.com/news/2015/01/detailed-explanation-javascript-game-loops-and-timing
 	     */
-	    private mainLoop();
+	    private mainLoop;
 	}
 
-	/// <reference types="angular" />
 	import {IAugmentedJQuery, IComponentOptions} from 'angular';
 	/**
 	 * Creates, configures and provides DI access to a managed canvas instance for usage as a render target
@@ -623,11 +610,10 @@ interface ResizeObserverEntry {
 	    getContext(): RenderingContext;
 	    getRenderTarget(): IRenderTarget;
 	    protected update(): void;
-	    private onResize();
+	    private onResize;
 	}
 	export const options: IComponentOptions;
 
-	/// <reference types="angular" />
 	import {} from 'angular';
 	export interface ILibrary<T, P> {
 	    get(id: string | number): Promise<T>;
@@ -724,19 +710,14 @@ interface ResizeObserverEntry {
 	export class HttpAdapter<T> extends SourceAdapter<T> {
 	    constructor(path: string);
 	}
-	export interface IEntityCtor<T, P> {
-	    new (params: P): T;
+	export class ImageAdapter extends SourceAdapter<HTMLImageElement> {
+	    constructor(path?: string);
 	}
+	export type IEntityCtor<T, P> = new (params: P) => T;
 	export interface ILibraryService {
-	    get<T, P>(type: IEntityCtor<T, P> | {
-	        new (...args): T;
-	    }, id: string | number): Promise<T>;
-	    getAll<T, P>(type: IEntityCtor<T, P> | {
-	        new (...args): T;
-	    }): Promise<T[]>;
-	    addSources<T, P>(ctor: {
-	        new (...args): T;
-	    }, sources: Array<ISource<P>>): void;
+	    get<T, P>(type: IEntityCtor<T, P> | (new (...args: any[]) => T), id: string | number): Promise<T>;
+	    getAll<T, P>(type: IEntityCtor<T, P> | (new (...args: any[]) => T)): Promise<T[]>;
+	    addSources<T, P>(ctor: new (...args: any[]) => T, sources: Array<ISource<P>>): void;
 	}
 	export class LibraryProvider implements IServiceProvider {
 	    private libraries;
@@ -752,9 +733,7 @@ interface ResizeObserverEntry {
 	     * @param {*} ctor
 	     * @param {Array<ISource<*>>} sources
 	     */
-	    addPreparedSources<T>(ctor: {
-	        new (...args): T;
-	    }, sources: Array<ISource<any>>): void;
+	    addPreparedSources<T>(ctor: new (...args: any[]) => T, sources: Array<ISource<any>>): void;
 	    /**
 	     * Retrieve entity of the given type and id
 	     * @param {Function} type
@@ -772,7 +751,7 @@ interface ResizeObserverEntry {
 	}
 	export enum EmbeddedStyle {
 	    MalletBase = "mallet-base",
-	    Debugger = "debugger",
+	    Debugger = "debugger"
 	}
 	export class StylesheetDTO extends DTO<StylesheetDTO> implements IStylesheetOptions {
 	    id: string;
@@ -782,7 +761,6 @@ interface ResizeObserverEntry {
 	    constructor(libraryProvider: LibraryProvider);
 	}
 
-	/// <reference types="angular" />
 	import {} from 'angular';
 	export interface IEmbeddedStylesConfig {
 	    getStyles(): string[];
@@ -792,10 +770,9 @@ interface ResizeObserverEntry {
 	    constructor();
 	    useStyle(id: EmbeddedStyle): void;
 	    $get(): IEmbeddedStylesConfig;
-	    private getConfiguredStyles();
+	    private getConfiguredStyles;
 	}
 
-	/// <reference types="angular" />
 	import {} from 'angular';
 	export interface IMalletConfig {
 	}
@@ -806,7 +783,6 @@ interface ResizeObserverEntry {
 	    $get(): IMalletConfig;
 	}
 
-	/// <reference types="gl-matrix" />
 	import glMatrix = require('gl-matrix');
 	/**
 	 * Provides a structure for the spacial parameters of an object in 3 dimensions, with
@@ -966,7 +942,6 @@ interface ResizeObserverEntry {
 	    toString(): string;
 	}
 
-	/// <reference types="gl-matrix" />
 	import {mat4, vec3} from 'gl-matrix';
 	export interface ICamera {
 	    /**
@@ -1048,7 +1023,6 @@ interface ResizeObserverEntry {
 	    getProjectionMatrix(): mat4;
 	}
 
-	/// <reference types="gl-matrix" />
 
 	import {vec2} from 'gl-matrix';
 	export interface IMeshOptions {
@@ -1086,19 +1060,19 @@ interface ResizeObserverEntry {
 	     * create the vertices need to an avoid unnecessary duplication
 	     * @param {number[]} vertIndices
 	     */
-	    private static getVertHash(vertIndices);
+	    private static getVertHash;
 	    /**
 	     * Get the dimensions of the mesh buffer
 	     * @param verts
 	     */
-	    private static getSize(verts);
+	    private static getSize;
 	    /**
 	     * Creates the normals for each face
 	     * @param {glMatrix.vec3[]} verts
 	     * @param {number[]} indices
 	     * @returns {glMatrix.vec3[]}
 	     */
-	    private static calculateFaceNormals(verts, indices);
+	    private static calculateFaceNormals;
 	    /**
 	     * Defines a set of points in space and how they form a 3D object
 	     * @param {IMeshOptions} params
@@ -1127,7 +1101,6 @@ interface ResizeObserverEntry {
 	    getIndexBuffer(): Readonly<ArrayBuffer>;
 	}
 
-	/// <reference types="gl-matrix" />
 	import {vec4} from 'gl-matrix';
 	export type ColorDef = vec4 | vec3 | [number, number, number] | [number, number, number, number] | string;
 	export interface IMaterial {
@@ -1141,12 +1114,12 @@ interface ResizeObserverEntry {
 	    private static defaultColor;
 	    private readonly color;
 	    private readonly texture;
-	    private static parseColorDef(colorDef);
+	    private static parseColorDef;
 	    constructor(options: IMaterialOptions);
 	    apply(): void;
 	    release(): void;
-	    private parseInputTexture(inputData);
-	    private createDefaultTexture(color);
+	    private parseInputTexture;
+	    private createDefaultTexture;
 	}
 
 	export interface IWebGLResourceFactory {
@@ -1185,8 +1158,8 @@ interface ResizeObserverEntry {
 	     * @param {string} name
 	     * @returns {Promise<WebGLMesh>}
 	     */
-	    private registerMesh(name);
-	    private registerMaterial(name);
+	    private registerMesh;
+	    private registerMaterial;
 	}
 
 	export interface IWebGLResourceContext {
@@ -1197,12 +1170,8 @@ interface ResizeObserverEntry {
 	    factory: IWebGLResourceFactory;
 	}
 
-	export interface IWebGLResourceCtor<Resource extends IWebGLResource, Options> {
-	    new (options: Options): Resource;
-	}
-	export interface IWebGLSimpleResourceCtor<Resource extends IWebGLResource> {
-	    new (): Resource;
-	}
+	export type IWebGLResourceCtor<Resource extends IWebGLResource, Options> = new (options: Options) => Resource;
+	export type IWebGLSimpleResourceCtor<Resource extends IWebGLResource> = new () => Resource;
 	export interface IWebGLResource {
 	    release(): void;
 	    init(resourceCache: {
@@ -1263,7 +1232,6 @@ interface ResizeObserverEntry {
 	    release(): void;
 	}
 
-	/// <reference types="gl-matrix" />
 
 	export interface IFastTransform {
 	    /**
@@ -1288,8 +1256,8 @@ interface ResizeObserverEntry {
 	 */
 	export class FastTransform implements ITransform, IFastTransform {
 	    private offset;
-	    static readonly BUFFER_LENGTH: number;
-	    static readonly FAST_TRANSFORM_FLAG: number;
+	    static readonly BUFFER_LENGTH = 16;
+	    static readonly FAST_TRANSFORM_FLAG = -1;
 	    private readonly buffer;
 	    private readonly scale;
 	    private readonly position;
@@ -1326,7 +1294,6 @@ interface ResizeObserverEntry {
 	    getMatrix(): glMatrix.mat4;
 	}
 
-	/// <reference types="gl-matrix" />
 	import {quat} from 'gl-matrix';
 	export interface IEntity {
 	    getTransform(): ITransform;
@@ -1402,7 +1369,7 @@ interface ResizeObserverEntry {
 	    SHORT = "SHORT",
 	    UNSIGNED_SHORT = "UNSIGNED_SHORT",
 	    UNSIGNED_BYTE = "UNSIGNED_BYTE",
-	    HALF_FLOAT = "HALF_FLOAT",
+	    HALF_FLOAT = "HALF_FLOAT"
 	}
 	export interface IAttribDescription {
 	    name: string;
@@ -1459,7 +1426,7 @@ interface ResizeObserverEntry {
 	    uniform3i = "uniform3i",
 	    uniform3iv = "uniform3iv",
 	    uniform4i = "uniform4i",
-	    uniform4iv = "uniform4iv",
+	    uniform4iv = "uniform4iv"
 	}
 	export type GLMatrixSetter = (transpose: false, matrix: Float32Array | number[]) => void;
 	export type GLVec4Setter = (x: number, y: number, z: number, w: number) => void;
@@ -1480,7 +1447,7 @@ interface ResizeObserverEntry {
 	}
 	export enum ShaderType {
 	    VERTEX_SHADER = "VERTEX_SHADER",
-	    FRAGMENT_SHADER = "FRAGMENT_SHADER",
+	    FRAGMENT_SHADER = "FRAGMENT_SHADER"
 	}
 	export class ShaderDTO extends DTO<ShaderDTO> implements IShaderOptions {
 	    id: string;
@@ -1495,7 +1462,7 @@ interface ResizeObserverEntry {
 	    constructor(options: IShaderOptions);
 	    getShader(): WebGLShader;
 	    getId(): string;
-	    prepare({gl}: IWebGLResourceContext): void;
+	    prepare({ gl }: IWebGLResourceContext): void;
 	    release(): void;
 	}
 
@@ -1516,7 +1483,7 @@ interface ResizeObserverEntry {
 	     * @param {IAttribDescription[]} attribs
 	     * @returns {Function}
 	     */
-	    private createLayoutDescription(attribs);
+	    private createLayoutDescription;
 	}
 
 	export interface IProgramOptions {
@@ -1529,7 +1496,7 @@ interface ResizeObserverEntry {
 	export interface IShaderProgram extends IWebGLResource {
 	    getGLProgram(): WebGLProgram;
 	    use(): void;
-	    getUniformSetter(name: string): (...data) => void;
+	    getUniformSetter(name: string): (...data: any[]) => void;
 	}
 	export class ProgramOptionsDTO extends DTO<IProgramOptions> implements IProgramOptions {
 	    shaders: {
@@ -1561,9 +1528,9 @@ interface ResizeObserverEntry {
 	     * Parse uniform spec to retrieve and cache uniform locations, generating flat keys for structs
 	     * @param {IUniformDescription[]} spec
 	     */
-	    private cacheUniforms(spec);
-	    private flattenUniformStructs(struct, keys?, pieces?);
-	    private getUniformType(uniform, name);
+	    private cacheUniforms;
+	    private flattenUniformStructs;
+	    private getUniformType;
 	}
 
 	export interface IValueReader {
@@ -1598,8 +1565,8 @@ interface ResizeObserverEntry {
 	     * @param {IValueReader} reader
 	     * @returns {string}
 	     */
-	    private static getDescription(reader);
-	    private static isIdentifier(value);
+	    private static getDescription;
+	    private static isIdentifier;
 	}
 
 	export interface IRenderer {
@@ -1648,7 +1615,6 @@ interface ResizeObserverEntry {
 	    release(): void;
 	}
 
-	/// <reference types="angular" />
 	import {IQService} from 'angular';
 	export interface IWebGLStage {
 	    set(renderTarget: RenderTargetWebGL): Promise<IWebGLResourceFactory>;
@@ -1702,7 +1668,6 @@ interface ResizeObserverEntry {
 	}
 
 
-	/// <reference types="angular" />
 	import {IScope} from 'angular';
 	export interface IWebGLApp {
 	    /**
@@ -1787,34 +1752,30 @@ interface ResizeObserverEntry {
 	     * Update the FPS value
 	     * @param totalElapsedTime
 	     */
-	    private updateFPS(totalElapsedTime);
+	    private updateFPS;
 	    /**
 	     * Derived From
 	     * Isaac Sukin
 	     * http://www.isaacsukin.com/news/2015/01/detailed-explanation-javascript-game-loops-and-timing
 	     */
-	    private mainLoop();
+	    private mainLoop;
 	    /**
 	     * Initialize the main app loop
 	     */
-	    private startMainLoop();
+	    private startMainLoop;
 	}
 
-	/// <reference types="angular" />
 	import {} from 'angular';
 	export const debuggerOptions: IComponentOptions;
 
-	/// <reference types="angular" />
 	import angular = require('angular');
 	export const malletDebugger: angular.IModule;
 
 	export const mallet: any;
 
-	/// <reference types="angular" />
 	import {} from 'angular';
 	export const webGLStageOptions: IComponentOptions;
 
-	/// <reference types="angular" />
 
 	export const malletGeometry: angular.IModule;
 
@@ -1822,7 +1783,6 @@ interface ResizeObserverEntry {
 	    constructor(libraryProvider: LibraryProvider);
 	}
 
-	/// <reference types="angular" />
 
 	export const malletWebGL: angular.IModule;
 
@@ -1833,7 +1793,6 @@ interface ResizeObserverEntry {
 	export const malletCore: any;
 
 
-	/// <reference types="angular" />
 	import {IPromise} from 'angular';
 	export interface IThread {
 	    /**
@@ -1885,12 +1844,17 @@ interface ResizeObserverEntry {
 	        klass: O;
 	        params: P;
 	        base: (context: InjectContext<A>, params: P) => O;
+	        /**
+	         * this is the meat of the factory, where we curry the factory base to be executed
+	         * with instance parameters and injected dependencies
+	         * @param {[]} dependencies
+	         * @returns {(params: P) => O}
+	         */
 	        exec(...dependencies: any[]): (params: P) => O;
 	    };
 	};
 	export type Runnable<F extends FactoryFields> = (params: F['params']) => F['klass'];
 
-	/// <reference types="angular" />
 	import {IDocumentService} from 'angular';
 	export interface IDynamicStylesheet {
 	    attach(): void;
@@ -1913,10 +1877,10 @@ interface ResizeObserverEntry {
 	        params: {
 	            src: string;
 	        };
-	        base: (context: {
-	            logger: any;
-	            $document: any;
-	        }, params: {
+	        base: (context: InjectContext<{
+	            $document: string;
+	            logger: string;
+	        }>, params: {
 	            src: string;
 	        }) => DynamicStylesheet;
 	        exec(...dependencies: any[]): (params: {
@@ -1931,8 +1895,8 @@ interface ResizeObserverEntry {
 	 */
 	export class StylesheetFactory extends StylesheetFactory_base {
 	}
+	export {};
 
-	/// <reference types="angular" />
 
 	/**
 	 * Embed basic utility styles in the app so client apps can just use them
@@ -1982,6 +1946,5 @@ interface ResizeObserverEntry {
 	    entityCount: number;
 	}
 
-	/// <reference types="angular" />
 	import {} from 'angular';
 	export const webGLDebuggerOptions: IComponentOptions;

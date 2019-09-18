@@ -1,12 +1,8 @@
 import {IWebGLResourceContext} from './webgl-resource-context';
 
-export interface IWebGLResourceCtor<Resource extends IWebGLResource, Options> {
-    new(options: Options): Resource;
-}
+export type IWebGLResourceCtor<Resource extends IWebGLResource, Options> = new(options: Options) => Resource;
 
-export interface IWebGLSimpleResourceCtor<Resource extends IWebGLResource> {
-    new(): Resource;
-}
+export type IWebGLSimpleResourceCtor<Resource extends IWebGLResource> = new() => Resource;
 
 type ClassMethod<T, R> =  {[M in keyof T]: (context: IWebGLResourceContext) => R};
 

@@ -33,8 +33,8 @@ export class DynamicStylesheet implements IDynamicStylesheet {
  * link or add more build steps, so we'll just inject them into the document
  */
 export class StylesheetFactory extends CreateFactory({
-    logger: MDT.Logger,
     $document: MDT.ng.$document,
+    logger: MDT.Logger,
 }, ({logger, $document}, {src}: {src: string}) => {
     return new DynamicStylesheet(src, $document, logger);
 }) {}

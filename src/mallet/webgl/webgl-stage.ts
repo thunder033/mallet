@@ -54,11 +54,11 @@ export class WebGLStage implements IWebGLStage {
 
         this.glFactory = new WebGLResourceFactory(this.library);
         this.context = WebGLResource.buildContext({
-            gl: this.gl,
             factory: this.glFactory,
+            gl: this.gl,
             logger: this.logger,
-            transformBuffer: null,
             renderTarget: this.renderTarget,
+            transformBuffer: null,
         });
 
         // TODO: make this mesh initialization not hard-coded

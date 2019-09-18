@@ -75,10 +75,10 @@ export class Debugger {
             const identifier = identifierKey && Debugger.isIdentifier(target[identifierKey]) ?
                 target[identifierKey] + '' : undefined;
             const watcher = {
+                identifier,
                 key,
                 tag,
                 type: target.constructor,
-                identifier,
                 getValue() { return value; },
             };
 

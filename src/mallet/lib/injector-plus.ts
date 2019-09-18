@@ -5,9 +5,7 @@ import {IController, IModule, IServiceProvider} from 'angular';
 const logger = new Logger();
 logger.config({level: Level.Verbose, tag: 'injector'});
 
-export interface InjectableMethodCtor {
-    new(): InjectableMethod;
-}
+export type InjectableMethodCtor = new() => InjectableMethod;
 
 export interface InjectableMethod {
     exec(...args): any;
@@ -79,7 +77,7 @@ export namespace inject {
  * Annotate an Angular provider definition (ex. with module.provider instead of service, controller, etc.)
  * @param {{new(): angular.IServiceProvider}} constructor
  */
-export function ngAnnotateProvider(constructor: {new(...args): IServiceProvider}) {
+export function ngAnnotateProvider(constructor: new(...args) => IServiceProvider) {
     const provider: IServiceProvider = constructor.prototype;
     const annotations: string[] = Reflect.getOwnMetadata(annotationKey, constructor) || [];
     const method = provider.$get;

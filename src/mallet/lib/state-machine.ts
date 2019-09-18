@@ -58,7 +58,7 @@ export abstract class StateMachine {
      * @param {{new(): StateMachine}} machine
      * @returns {number}
      */
-    public static all(machine: {new(): StateMachine}): number {
+    public static all(machine: new() => StateMachine): number {
         return Object.keys(machine).reduce((all: number, state: string) => {
             return all | machine[state];
         }, 0);

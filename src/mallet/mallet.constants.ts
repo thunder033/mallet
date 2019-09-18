@@ -12,11 +12,11 @@ const constants = angular.module('mallet-constants', [])
     .constant(MDT.const.MaxFrameRate, 60)
     .constant(MDT.const.Keys, Object.freeze({
         Down: 40,
-        Up: 38,
-        Right: 39,
-        Left: 37,
-        Space: 32,
         Escape: 27,
+        Left: 37,
+        Right: 39,
+        Space: 32,
+        Up: 38,
     }));
 
 module.exports = constants.name;

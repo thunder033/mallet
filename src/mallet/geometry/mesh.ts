@@ -241,10 +241,10 @@ export class Mesh {
         }
 
         const vertex = {
-            position: this.positions[positionIndex],
-            uv: this.uvs[uvIndex],
             index: Object.keys(this.vertices).length,
             normal: null,
+            position: this.positions[positionIndex],
+            uv: this.uvs[uvIndex],
         };
 
         const vertHash = Mesh.getVertHash([positionIndex, uvIndex]);

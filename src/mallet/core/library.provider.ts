@@ -1,4 +1,3 @@
-
 import bind from 'bind-decorator';
 import {IHttpResponse, IServiceProvider} from 'angular';
 import angular = require('angular');
@@ -147,10 +146,27 @@ export class SourceAdapter<T> implements ISource<T> {
 export class HttpAdapter<T> extends SourceAdapter<T> {
     constructor(path: string) {
         super({
-            source: '$http',
-            method: 'get',
             inputTransform: (id: string) => `${path}/${id}`,
+            method: 'get',
             outputTransform: (resp: IHttpResponse<any>) => resp.data,
+            source: '$http',
+        });
+    }
+}
+
+export class ImageAdapter extends SourceAdapter<HTMLImageElement> {
+    constructor(path: string = '.') {
+        super({
+            method: 'loadImage',
+            source: {
+                loadImage(file: string) {
+                    return new Promise((resolve) => {
+                        const image = new Image();
+                        image.onload = () => resolve(image);
+                        image.src = `${path}/${file}`;
+                    });
+                },
+            },
         });
     }
 }
@@ -178,7 +194,7 @@ class Library<T, P> implements ILibrary<T, P> {
 
         this.sourceIndex = 0;
         this.id = id;
-        return this.fallbackGet(null).then(this.processResult);
+        return this.cascadingGet(null).then(this.processResult);
     }
 
     /**
@@ -197,32 +213,32 @@ class Library<T, P> implements ILibrary<T, P> {
      * @param {Object | string} result
      * @returns {*}
      */
-    @bind protected processResult(result: object | string): T {
+    @bind protected processResult(result: T | P | string): T {
         if (result === null || result === '') {
             return null;
         } else if (typeof result === 'string') {
             result = JSON.parse(result);
         }
 
-        return this.returnDTO ? result as T : new this.ctor(result as P);
+        return this.returnDTO ? (result as unknown) as T : new this.ctor((result as unknown) as P);
     }
 
     /**
-     * Recurse through each source, only calling a source if the previous return no result or failed
+     * Cascade through each source, only calling a source if the previous return no result or failed
      * @param [result] result retrieved from higher priority source
      * @returns {Promise<string | *>}
      */
-    @bind private fallbackGet(result): Promise<T | string> {
+    @bind private cascadingGet(result): Promise<T | string> {
         if (!result) {
             if (this.sourceIndex >= this.sources.length) {
                 return Promise.resolve(null);
             }
 
             return this.sources[this.sourceIndex++].get(this.id)
-                .then(this.fallbackGet)
+                .then(this.cascadingGet)
                 .catch((e) => {
                     console.log(`Source get failed for ${this.ctor.name}`, e);
-                    return this.fallbackGet(null);
+                    return this.cascadingGet(null);
                 });
         }
 
@@ -234,23 +250,21 @@ class Library<T, P> implements ILibrary<T, P> {
  * Library with dynamically built entries that are prepared during application setup
  */
 class PreparedLibrary<T> extends Library<T, void> {
-    constructor(ctor: {new (...args): T}, sources: Array<ISource<void>>) {
+    constructor(ctor: new (...args) => T, sources: Array<ISource<void>>) {
         super(ctor, sources);
     }
 
-    protected processResult(result: Object | string): T {
+    protected processResult(result: T | string): T {
         return result as T;
     }
 }
 
-export interface IEntityCtor<T, P> {
-    new(params: P): T;
-}
+export type IEntityCtor<T, P> = new(params: P) => T;
 
 export interface ILibraryService {
-    get<T, P>(type: IEntityCtor<T, P> | {new (...args): T}, id: string | number): Promise<T>;
-    getAll<T, P>(type: IEntityCtor<T, P> | {new (...args): T}): Promise<T[]>;
-    addSources<T, P>(ctor: {new (...args): T}, sources: Array<ISource<P>>): void;
+    get<T, P>(type: IEntityCtor<T, P> | (new (...args) => T), id: string | number): Promise<T>;
+    getAll<T, P>(type: IEntityCtor<T, P> | (new (...args) => T)): Promise<T[]>;
+    addSources<T, P>(ctor: new (...args) => T, sources: Array<ISource<P>>): void;
 }
 
 export class LibraryProvider implements IServiceProvider {
@@ -278,7 +292,7 @@ export class LibraryProvider implements IServiceProvider {
      * @param {*} ctor
      * @param {Array<ISource<*>>} sources
      */
-    public addPreparedSources<T>(ctor: {new (...args): T}, sources: Array<ISource<any>>) {
+    public addPreparedSources<T>(ctor: new (...args) => T, sources: Array<ISource<any>>) {
         if (this.libraries.has(ctor)) {
             this.libraries.get(ctor).addSources(sources);
         } else {

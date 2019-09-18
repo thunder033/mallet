@@ -1,3 +1,4 @@
+/* tslint:disable:object-literal-sort-keys */
 import {LibraryProvider, StaticSource} from '../core/library.provider';
 import {MDT} from '../mallet.dependency-tree';
 import {inject} from '../lib/injector-plus';
@@ -42,6 +43,7 @@ void main() {
     vTextureCoord = a_uv;
 }`,
     // language=GLSL
+    // tslint:disable-next-line:object-literal-sort-keys
     fragmentShader: `#version 100
 // fragment shaders don't hvae default precision, so define
 // as mediump, "medium precision"
