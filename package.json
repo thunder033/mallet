@@ -41,7 +41,6 @@
   "dependencies": {},
   "devDependencies": {
     "@types/angular": "^1.6.32",
-    "@types/angular-ui-router": "^1.1.39",
     "@types/chai": "^4.2.2",
     "@types/gl-matrix": "^2.4.0",
     "@types/mocha": "^2.2.39",
