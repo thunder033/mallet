@@ -39,11 +39,10 @@ void main() {
    
     gl_Position = projectionViewWorld * vec4(a_position, 1);
     
-    vNormal = vec3(world * view * vec4(a_normal, 1));
+    vNormal = vec3(mat3(world) * mat3(view) * a_normal);
     vTextureCoord = a_uv;
 }`,
-    // language=GLSL
-    // tslint:disable-next-line:object-literal-sort-keys
+    // language=GLSL tslint:disable-next-line:object-literal-sort-keys
     fragmentShader: `#version 100
 // fragment shaders don't hvae default precision, so define
 // as mediump, "medium precision"
@@ -187,7 +186,8 @@ const meshes: {[id: string]: IMeshOptions} = {cube: {
     }};
 
 const materials = {
-    white: {diffuse: '#ffcc00ff'},
+    white: {diffuse: '#ffffffff'},
+    blue: {diffuse: '#aaaaffff'},
 };
 
 export class WebGLLibraryConfig {

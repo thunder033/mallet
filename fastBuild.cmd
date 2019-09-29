@@ -16,4 +16,4 @@ call browserify -d --im --noparse=D:\git\mallet\node_modules\angular\angular.min
 @echo "version": "0.0.%VER%">> dist/package.json
 @echo }>> dist/package.json
 
-echo build finished
+echo build finished %VER%
