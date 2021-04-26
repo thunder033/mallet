@@ -3,6 +3,8 @@
   "rules": {
     "no-implicit-dependencies": false,
     "no-submodule-imports": false,
-    "no-duplicate-imports": false
+    "no-duplicate-imports": false,
+    "member-access": false,
+    "no-unused-expression": false
   }
 }

@@ -1793,26 +1793,6 @@ interface ResizeObserverEntry {
 	export const malletCore: any;
 
 
-	import {IPromise} from 'angular';
-	export interface IThread {
-	    /**
-	     * Send a message to the worker
-	     * @param {*} params
-	     * @returns {Promise} resolves when the worker response is received
-	     */
-	    invoke(params: {
-	        _id: number;
-	    }): IPromise<any>;
-	    /**
-	     * Indicates if the worker has any pending invocations
-	     * @returns {boolean}
-	     */
-	    isIdle(): boolean;
-	}
-	export class threadFactory implements InjectableMethod {
-	    exec($q: IQService, logger: Logger): (script: string) => IThread;
-	}
-
 	export type InjectContext<C> = {
 	    [D in keyof C]: any;
 	};
@@ -1905,46 +1885,6 @@ interface ResizeObserverEntry {
 	export const embeddedStyles: angular.IModule;
 
 
-	export interface IItem {
-	    next: IItem;
-	    prev: IItem;
-	    data?: any;
-	}
-	export class Item implements IItem {
-	    data: any;
-	    prev: IItem;
-	    next: IItem;
-	    constructor(data: any, prev: IItem, next: IItem);
-	    remove(): void;
-	}
-	export interface ILinkedList<T> {
-	    push(data: T): Item;
-	    getNext(): T;
-	    resetPointer(): void;
-	}
-	/**
-	 * A linked list with self-managed item addition and deletion
-	 */
-	export class LinkedList<T> implements ILinkedList<T>, IItem {
-	    private head;
-	    private pointer;
-	    private tail;
-	    next: IItem;
-	    prev: IItem;
-	    constructor();
-	    push(data: T): Item;
-	    /**
-	     * Return data from the current item and move to the next. Note: If the current item is removed - the item that would
-	     * have its data returned - it will not be skipped if getNext is subsequently called
-	     * @returns {T}
-	     */
-	    getNext(): T;
-	    resetPointer(): void;
-	}
-
 	export interface IFastRendererOptions extends IRendererOptions {
 	    entityCount: number;
 	}
-
-	import {} from 'angular';
-	export const webGLDebuggerOptions: IComponentOptions;
