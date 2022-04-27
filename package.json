@@ -56,7 +56,7 @@
     "chai-spies": "^1.0.0",
     "dts-generator": "^3.0.0",
     "gl-matrix": "^2.4.0",
-    "grunt": "^1.0.4",
+    "grunt": "^1.5.2",
     "mallet-dev": "file:dist/",
     "mocha": "^6.2.0",
     "mocha-typescript": "^1.0.22",
