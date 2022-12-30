@@ -58,7 +58,7 @@
     "gl-matrix": "^2.4.0",
     "grunt": "^1.0.4",
     "mallet-dev": "file:dist/",
-    "mocha": "^6.2.0",
+    "mocha": "^10.2.0",
     "mocha-typescript": "^1.0.22",
     "pulsar-lib": "github:thunder033/pulsar-lib",
     "reflect-metadata": "^0.1.10",
